@@ -22,16 +22,13 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.paper } }}
-      tabBar={({ state, navigation }: any) => (
+      tabBar={({ state, navigateToTab }: { state: { index: number; routes: { key: string; name: string }[] }; navigateToTab: (routeKey: string) => void }) => (
         <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
-          {state.routes.map((route: { key: string; name: string }, i: number) => {
+          {state.routes.map((route, i) => {
             const tab = TABS.find((t) => t.name === route.name);
             if (!tab) return null;
             const focused = state.index === i;
-            const onPress = () => {
-              const e = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-              if (!focused && !e.defaultPrevented) navigation.navigate(route.name);
-            };
+            const onPress = () => { if (!focused) navigateToTab(route.key); };
             if (tab.name === 'stamp') {
               return (
                 <Pressable key={route.key} onPress={onPress} accessibilityRole="button" accessibilityLabel="Stamp the nearest landmark"
