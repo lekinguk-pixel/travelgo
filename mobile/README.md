@@ -20,3 +20,8 @@ Expo Router app, wired to the Supabase backend in `../supabase`.
 - Email codes: in the Supabase dashboard, edit **Authentication → Email Templates → Magic Link** so it includes `{{ .Token }}`, otherwise users get a link instead of a code.
 - Builds run on EAS from the GitHub repo with base directory `mobile`. Profiles in `eas.json`: `preview` makes an installable APK, `production` makes a Play Store bundle.
 - Package versions are installed with `npx expo install` so they match the Expo SDK.
+
+## Signing keys
+
+- `credentials/preview.jks` + `credentials.json` sign **test builds only** (`preview` and `development` profiles). It is a throwaway key kept in this private repo so cloud builds work without extra setup. Never use it for the Play Store.
+- The `production` profile uses an Expo-managed key, created the first time a production build is run by an account owner (`eas credentials` or the first `eas build --profile production`).
