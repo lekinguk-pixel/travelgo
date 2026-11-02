@@ -17,7 +17,8 @@ Expo Router app, wired to the Supabase backend in `../supabase`.
 ## Setup notes
 
 - Supabase URL and publishable key live in `app.json` under `extra`. They are safe to ship in the app.
-- Email codes: in the Supabase dashboard, edit **Authentication → Email Templates → Magic Link** so it includes `{{ .Token }}`, otherwise users get a link instead of a code.
+- Sign-in during testing: email + password, with **Confirm email switched off** in Supabase (Authentication → Sign In / Providers → Email), so no emails are sent.
+- Before launch: set up a proper email sender on our own domain, switch Confirm email back on, and re-enable the 6-digit email code flow (`sendCode` in `app/sign-in.tsx` and `app/verify.tsx`). The **Magic Link** and **Confirm signup** templates must both include `{{ .Token }}`.
 - Builds run on EAS from the GitHub repo with base directory `mobile`. Profiles in `eas.json`: `preview` makes an installable APK, `production` makes a Play Store bundle.
 - Package versions are installed with `npx expo install` so they match the Expo SDK.
 
