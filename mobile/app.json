@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "mmGO",
+    "slug": "mmgo",
+    "scheme": "mmgo",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F6F0E2",
+    "android": {
+      "package": "com.mmgo.app",
+      "backgroundColor": "#1F2250",
+      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+      "blockedPermissions": ["ACCESS_BACKGROUND_LOCATION", "RECORD_AUDIO"]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "mmGO uses your camera to take the photo that proves you visited a landmark.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "mmGO checks your location to confirm you're at a landmark when you stamp it."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "supabaseUrl": "https://pianamkdbfwuxrlacgcy.supabase.co",
+      "supabasePublishableKey": "sb_publishable_6YGf13h9hHy4eHZTc7-IZA_Gv_v7Yyl"
+    }
+  }
+}
