@@ -24,7 +24,7 @@ export default function TabsLayout() {
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.paper } }}
       tabBar={({ state, navigation }: any) => (
         <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
-          {state.routes.map((route, i) => {
+          {state.routes.map((route: { key: string; name: string }, i: number) => {
             const tab = TABS.find((t) => t.name === route.name);
             if (!tab) return null;
             const focused = state.index === i;
