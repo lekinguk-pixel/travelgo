@@ -1,0 +1,365 @@
+<title>mmGO Title Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@700&family=Plus+Jakarta+Sans:wght@400;600&family=Silkscreen:wght@400;700&display=swap">
+<style>
+/* Layout: one phone-width title screen. A pixel-art dawn scene on top, the game logo floating in its sky, the call to adventure on parchment below. Single deliberate look in both themes. */
+:root {
+  --night: #1F2250;
+  --paper: #F6F0E2;
+  --ink: #1B2A41;
+  --stamp: #C8553D;
+  --gold: #D9A441;
+  --muted: #5F5B52;
+  --page: #141633;
+  --font-display: "Pixelify Sans", "Courier New", monospace;
+  --font-label: "Silkscreen", "Courier New", monospace;
+  --font-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+html, body { height: 100%; }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-block: 0;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+}
+.phone {
+  width: 100%;
+  max-width: 440px;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  box-shadow: 0 0 0 4px var(--ink);
+}
+.scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 69 / 90;
+  max-width: 100%;
+  background: var(--night);
+  border-bottom: 6px solid var(--ink);
+  overflow: hidden;
+}
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.title {
+  position: absolute;
+  left: 0; right: 0;
+  top: 8%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.tagline {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: clamp(9px, 2.8vw, 12px);
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  text-shadow: 2px 2px 0 var(--ink);
+  opacity: 0;
+  animation: fade 0.6s 1.1s steps(4) forwards;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(64px, 24vw, 104px);
+  line-height: 1;
+  color: var(--paper);
+  -webkit-text-stroke: 4px var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 0 6px 0 var(--stamp), 0 11px 0 var(--ink);
+  transform: translateY(-160%);
+  animation: drop 0.9s 0.3s cubic-bezier(.3,1.6,.5,1) forwards, float 3.2s 1.4s steps(2) infinite;
+}
+.banner {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%) scale(0.6);
+  padding: 10px 16px;
+  background: var(--ink);
+  border: 3px solid var(--gold);
+  box-shadow: 4px 4px 0 #000;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s steps(3), transform 0.3s steps(3);
+  pointer-events: none;
+}
+.banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.banner small { display: block; font-family: var(--font-label); font-size: 10px; color: var(--gold); letter-spacing: 0.08em; }
+.banner strong { display: block; font-family: var(--font-display); font-size: 22px; color: var(--paper); margin-top: 2px; }
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px 8px;
+}
+.eyebrow {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--stamp);
+}
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 7.4vw, 31px);
+  line-height: 1.1;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.copy p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 62ch;
+}
+.actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px calc(28px + env(safe-area-inset-bottom, 0px));
+}
+.start {
+  width: 100%;
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--paper);
+  background: var(--stamp);
+  border: 3px solid var(--ink);
+  box-shadow: 0 5px 0 var(--ink);
+  padding: 16px;
+  cursor: pointer;
+  animation: nudge 1.6s 2.2s steps(2) infinite;
+}
+.start:hover { filter: brightness(1.06); }
+.start:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+.start:focus-visible, .continue:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.start:disabled { cursor: default; animation: none; }
+.continue {
+  font-family: var(--font-label);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+@keyframes drop { to { transform: translateY(0); } }
+@keyframes float { 50% { translate: 0 -3px; } }
+@keyframes fade { to { opacity: 1; } }
+@keyframes nudge { 50% { translate: 0 -2px; } }
+@media (prefers-reduced-motion: reduce) {
+  .logo { transform: none; animation: none; }
+  .tagline { opacity: 1; animation: none; }
+  .start { animation: none; }
+}
+</style>
+
+<main class="phone">
+  <div class="scene" id="scene">
+    <canvas id="cv" width="69" height="90" aria-label="Pixel-art dawn: a traveller stands at the edge of their home town, looking down a path toward distant landmarks as the sun rises" role="img"></canvas>
+    <div class="title">
+      <div class="tagline">THE REAL-WORLD TRAVEL GAME</div>
+      <div class="logo">mmGO</div>
+    </div>
+    <div class="banner" id="banner" aria-live="polite">
+      <small>CHAPTER 1 BEGINS</small>
+      <strong>Your journey has started</strong>
+    </div>
+  </div>
+  <section class="copy">
+    <div class="eyebrow">CHAPTER 1 · YOUR FIRST JOURNEY</div>
+    <h1>Your adventure starts here...</h1>
+    <p>Every great journey begins at your front door. Explore real places, take a photo of yourself there and collect stamps, from your home town to the far side of the world.</p>
+  </section>
+  <div class="actions">
+    <button class="start" id="start" type="button">Begin your journey</button>
+    <button class="continue" id="continue" type="button">Continue my adventure</button>
+  </div>
+</main>
+
+<script>
+(() => {
+  const W = 69, H = 90;
+  const cv = document.getElementById('cv');
+  const ctx = cv.getContext('2d');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const mk = () => { const c = document.createElement('canvas'); c.width = W; c.height = H; return c; };
+  const sky = mk(), fg = mk();
+  const sctx = sky.getContext('2d'), fctx = fg.getContext('2d');
+  const px = (c, x, y, col) => { c.fillStyle = col; c.fillRect(x, y, 1, 1); };
+  const sprite = (c, rows, ox, oy, map) => rows.forEach((r, y) => [...r].forEach((ch, x) => { if (ch !== '.') px(c, ox + x, oy + y, map[ch]); }));
+
+  // ---- sky (static) ----
+  const bands = [[0,'#1F2250'],[10,'#2E2C6E'],[19,'#4B3290'],[27,'#7A3E98'],[34,'#B44E86'],[41,'#E0705F'],[48,'#F29A4E'],[54,'#F7C766']];
+  for (let y = 0; y < 64; y++) {
+    let i = 0; bands.forEach((b, k) => { if (y >= b[0]) i = k; });
+    for (let x = 0; x < W; x++) {
+      let col = bands[i][1]; const nx = bands[i + 1];
+      if (nx && y === nx[0] - 1 && (x + y) % 2 === 0) col = nx[1];
+      px(sctx, x, y, col);
+    }
+  }
+
+  // ---- foreground (static, transparent sky) ----
+  const peaks = [[4,46],[17,49],[29,43],[56,47],[66,50]];
+  for (let x = 0; x < W; x++) {
+    let h = 99; peaks.forEach(([p, ph]) => { h = Math.min(h, ph + Math.abs(x - p)); });
+    for (let y = h; y <= 63; y++) px(fctx, x, y, y === h ? '#6A4C93' : '#4A3570');
+  }
+  const sil = { '#': '#33285A' };
+  sprite(fctx, ['..#..','..#..','..#..','.###.','..#..','.###.','.#.#.','.###.','.#.#.','##.##','#...#','#...#'], 22, 49, sil);
+  sprite(fctx, ['...#...','.#####.','#######','..###..','.#####.','#######','..###..','..#.#..','..###..'], 60, 52, sil);
+  sprite(fctx, ['...#...','..###..','.#####.','#######','#######','#.#.#.#','#######'], 39, 54, sil);
+  sprite(fctx, ['.#.','.#.','###','###','###','###'], 50, 55, sil);
+  for (let x = 0; x < W; x++) { const h = 62 + Math.round(2.5 * Math.sin(x / 6)); for (let y = h; y < H; y++) px(fctx, x, y, y === h ? '#3F8A5E' : '#2F6B4F'); }
+  for (let x = 0; x < W; x++) { const h = 70 + Math.round(2 * Math.sin(x / 5 + 1)); for (let y = h; y < H; y++) px(fctx, x, y, y === h ? '#8ACB6E' : (y === h + 1 ? '#6DB662' : '#4E9F5A')); }
+  const pathX = y => { const t = (y - 63) / (H - 1 - 63); return Math.round(45 + (33 - 45) * t + 3 * Math.sin(t * 3.2)); };
+  for (let y = 63; y < H; y++) {
+    const t = (y - 63) / (H - 1 - 63); const cx = pathX(y); const w = Math.round(1 + 12 * t * t + 2 * t);
+    for (let x = cx - w; x <= cx + w; x++) px(fctx, x, y, (x === cx - w || x === cx + w) ? '#C9A465' : '#E8C98A');
+  }
+  let seed = 11; const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  for (let i = 0; i < 40; i++) {
+    const x = Math.floor(rnd() * W), y = 72 + Math.floor(rnd() * 17);
+    const d = fctx.getImageData(x, y, 1, 1).data;
+    if (d[0] === 0x4E && d[1] === 0x9F) px(fctx, x, y, '#3F8A5E');
+  }
+  const house = { 'R':'#C8553D','r':'#9E3F2D','W':'#F6F0E2','O':'#F7C766','D':'#1B2A41','K':'#6E4A2E' };
+  const hb = ['......K..','...RRRK..','..RRRRR..','.RRRRRRR.','rrrrrrrrr','.WWWWWWW.','.WOWWWOW.','.WWWDWWW.','.WWWDWWW.'];
+  sprite(fctx, hb, 2, 69, house); sprite(fctx, hb, 12, 72, house);
+  sprite(fctx, ['..RRR..','.RRRRR.','rrrrrrr','.WWWWW.','.WOWDW.','.WWWDW.'], 1, 80, house);
+  const tree = { 'G':'#2F6B4F','g':'#3F8A5E','T':'#6E4A2E' };
+  const tb = ['.ggg.','gGGGg','GGGGG','.GGG.','..T..','..T..'];
+  sprite(fctx, tb, 22, 72, tree); sprite(fctx, tb, 9, 82, tree);
+  sprite(fctx, ['SSSSSSS','SPSSSPS','...P...','...P...','...P...','...P...'], 46, 74, { 'S':'#E8C98A', 'P':'#6E4A2E' });
+  const chimneys = [[8, 68], [18, 71]];
+
+  // ---- dynamic actors ----
+  const stars = []; for (let i = 0; i < 34; i++) stars.push({ x: Math.floor(rnd() * W), y: Math.floor(rnd() * 18), gold: rnd() > 0.7, s: 0.8 + rnd() * 2.4, p: rnd() * 6.28 });
+  const clouds = [{ x: 4, y: 24, v: 0.9 }, { x: 40, y: 31, v: 0.6 }, { x: 58, y: 18, v: 1.2 }];
+  const cloudRows = ['..####....','.######.##','##########'];
+  const birds = [{ x: -4, y: 33, v: 4.5, p: 0 }, { x: -12, y: 29, v: 4.0, p: 1.3 }, { x: -20, y: 35, v: 4.8, p: 2.2 }];
+  const smoke = [];
+  const heroMap = { 'H':'#C8553D','S':'#E8B48A','B':'#B5784A','b':'#8A5A35','C':'#2A7F75','L':'#1B2A41' };
+  const heroTop = ['.HHHH.','HHHHHH','.SSSS.','BBBBBB','BbBBbB','CBBBBC','CBBBBC','.CCCC.'];
+  const legsA = ['.L..L.','.L..L.'], legsB = ['..LL..','.L..L.'];
+  const mini = ['.H.','BBB','.C.','L.L'];
+
+  let journey = null; // start time when walking
+  const banner = document.getElementById('banner');
+  const startBtn = document.getElementById('start');
+
+  const sunY = t => reduce ? 59 : Math.max(59, 72 - (t / 4000) * 13);
+
+  function drawSun(y0) {
+    const cx = 46, r = 12;
+    for (let y = Math.ceil(y0 - r); y <= 61; y++) for (let x = cx - r; x <= cx + r; x++) {
+      const d = Math.hypot(x - cx, y - y0);
+      if (d <= r && !(y > 51 && (y === 53 || y === 56 || y === 58))) px(ctx, x, y, d > r - 1.2 ? '#FFD27A' : '#FFE7A3');
+    }
+  }
+
+  function frame(now) {
+    const t = now - t0;
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(sky, 0, 0);
+    // stars fade as the sun climbs
+    const dawn = Math.min(1, t / 6000);
+    stars.forEach(s => {
+      const a = (reduce ? 0.8 : 0.35 + 0.65 * Math.abs(Math.sin(t / 1000 * s.s + s.p))) * (1 - dawn * 0.5);
+      ctx.globalAlpha = a; px(ctx, s.x, s.y, s.gold ? '#F7C766' : '#F6F0E2');
+    });
+    ctx.globalAlpha = 1;
+    drawSun(sunY(t));
+    clouds.forEach(c => {
+      const x = Math.floor(((c.x + (reduce ? 0 : t / 1000 * c.v)) % (W + 14)) - 10);
+      sprite(ctx, cloudRows, x, c.y, { '#': '#F6B07A' });
+      for (let i = 0; i < 10; i++) if (cloudRows[2][i] === '#') px(ctx, x + i, c.y + 2, '#D9826E');
+    });
+    if (!reduce) birds.forEach(b => {
+      const x = Math.floor(((b.x + t / 1000 * b.v) % (W + 30)));
+      const up = Math.floor(t / 220 + b.p) % 2 === 0;
+      sprite(ctx, up ? ['#.#', '.#.'] : ['.#.', '#.#'], x, b.y, { '#': '#2E2C6E' });
+    });
+    ctx.drawImage(fg, 0, 0);
+    // chimney smoke
+    if (!reduce) {
+      chimneys.forEach(([cx, cy], i) => { if (Math.random() < 0.06) smoke.push({ x: cx, y: cy, born: t, drift: 0.4 + Math.random() * 0.6 }); });
+      for (let i = smoke.length - 1; i >= 0; i--) {
+        const s = smoke[i]; const age = (t - s.born) / 1000;
+        if (age > 2.6) { smoke.splice(i, 1); continue; }
+        ctx.globalAlpha = 0.75 * (1 - age / 2.6);
+        px(ctx, Math.round(s.x + age * s.drift * 2), Math.round(s.y - age * 4), '#F6F0E2');
+      }
+      ctx.globalAlpha = 1;
+    }
+    // traveller
+    if (!journey) {
+      const bob = reduce ? 0 : (Math.floor(t / 520) % 2);
+      sprite(ctx, heroTop, 31, 77 + bob, heroMap);
+      sprite(ctx, legsA, 31, 85, heroMap);
+    } else {
+      const k = Math.min(1, (now - journey) / 5200);
+      const fy = 86 - k * 22; // feet row climbs from 86 toward the horizon
+      const fx = pathX(Math.round(fy));
+      const step = Math.floor((now - journey) / 180) % 2 === 0;
+      if (fy > 72) {
+        sprite(ctx, heroTop, fx - 3, Math.round(fy) - 9, heroMap);
+        sprite(ctx, step ? legsA : legsB, fx - 3, Math.round(fy) - 1, heroMap);
+      } else if (k < 1) {
+        sprite(ctx, mini, fx - 1, Math.round(fy) - 3, heroMap);
+      }
+      if (k >= 1 && !banner.classList.contains('show')) {
+        banner.classList.add('show');
+        startBtn.disabled = false;
+        startBtn.textContent = 'Watch again';
+      }
+    }
+    if (!reduce || journey) requestAnimationFrame(frame);
+  }
+
+  const t0 = performance.now();
+  requestAnimationFrame(frame);
+
+  startBtn.addEventListener('click', () => {
+    banner.classList.remove('show');
+    startBtn.disabled = true;
+    startBtn.textContent = 'Setting off...';
+    journey = performance.now();
+    if (reduce) requestAnimationFrame(frame);
+  });
+  document.getElementById('continue').addEventListener('click', () => {
+    banner.querySelector('small').textContent = 'WELCOME BACK';
+    banner.querySelector('strong').textContent = 'Your book is waiting';
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), 2200);
+  });
+})();
+</script>
