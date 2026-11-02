@@ -144,7 +144,7 @@ export function TitleScene({ look, walking = false, onWalkDone }: Props) {
   return (
     <View style={{ width, height, backgroundColor: '#1F2250', overflow: 'hidden' }} accessible accessibilityRole="image"
       accessibilityLabel="A pixel-art traveller at the edge of their home town at dawn, looking down a path toward distant landmarks">
-      <Svg width={width} height={height} viewBox={`0 0 ${W} ${H}`} shapeRendering="crispEdges">
+      <Svg width={width} height={height} viewBox={`0 0 ${W} ${H}`} {...({ shapeRendering: 'crispEdges' } as object)}>
         {statics.sky.map((p) => <Path key={'s' + p.color} d={p.d} fill={p.color} />)}
         {starCells.map((c, i) => <Path key={'a' + i} d={`M${c.x} ${c.y}h1v1h-1z`} fill={c.c} fillOpacity={c.a} />)}
         {gridToPaths(back).map((p) => <Path key={'b' + p.color} d={p.d} fill={p.color} />)}

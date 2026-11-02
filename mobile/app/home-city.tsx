@@ -80,7 +80,7 @@ export default function HomeCity() {
             </Panel>
           );
         }}
-        ListEmptyComponent={cities ? <Body>No match yet. More towns are being added; pick the nearest city for now.</Body> : null}
+        ListEmptyComponent={cities ? <Body>No match yet. More towns are being added; pick the nearest city for now.</Body> : undefined}
         ListFooterComponent={
           <View style={{ gap: 10, marginTop: 20 }}>
             {error ? <Text style={styles.error}>{error}</Text> : null}

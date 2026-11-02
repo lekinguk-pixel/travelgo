@@ -1,5 +1,5 @@
 import { Redirect, router } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Label, PixelArt, PixelButton, PixelInput, StepHeader, TextLink, Title } from '@/components/ui';
@@ -28,7 +28,7 @@ export default function CreateTraveller() {
   const [name, setName] = useState(travellerDraft.name);
   const [nameState, setNameState] = useState<NameState>(travellerDraft.name ? 'ok' : 'empty');
   const [[dd, mm, yyyy], setDob] = useState<[string, string, string]>(['', '', '']);
-  const mmRef = useRef<TextInput>(null), yyRef = useRef<TextInput>(null);
+  const mmRef = useRef<ComponentRef<typeof TextInput>>(null), yyRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   // A returning player who already has a traveller skips this screen (but not mid-creation).
   useEffect(() => { if (profile && !travellerDraft.dateOfBirth) router.replace('/(tabs)'); }, [profile]);

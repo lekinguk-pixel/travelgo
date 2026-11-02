@@ -1,7 +1,8 @@
 {
   "expo": {
     "name": "mmGO",
-    "slug": "mmgo",
+    "slug": "mmogo",
+    "owner": "lekinguks-team",
     "scheme": "mmgo",
     "version": "0.1.0",
     "orientation": "portrait",
@@ -10,8 +11,15 @@
     "android": {
       "package": "com.mmgo.app",
       "backgroundColor": "#1F2250",
-      "permissions": ["CAMERA", "ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
-      "blockedPermissions": ["ACCESS_BACKGROUND_LOCATION", "RECORD_AUDIO"]
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "blockedPermissions": [
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -28,14 +36,25 @@
         {
           "locationWhenInUsePermission": "mmGO checks your location to confirm you're at a landmark when you stamp it."
         }
-      ]
+      ],
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#1F2250"
+        }
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": false
     },
     "extra": {
       "supabaseUrl": "https://pianamkdbfwuxrlacgcy.supabase.co",
-      "supabasePublishableKey": "sb_publishable_6YGf13h9hHy4eHZTc7-IZA_Gv_v7Yyl"
+      "supabasePublishableKey": "sb_publishable_6YGf13h9hHy4eHZTc7-IZA_Gv_v7Yyl",
+      "eas": {
+        "projectId": "bdde5942-bfaf-4da4-be70-5a9097aaa4c8"
+      }
     }
   }
 }

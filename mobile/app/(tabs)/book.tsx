@@ -26,7 +26,7 @@ export default function Book() {
     setEntries(list);
     if (list.length) {
       const { data: signed } = await supabase.storage.from('stamp-photos').createSignedUrls(list.map((e) => e.photo_path), 60 * 60);
-      setUrls(Object.fromEntries((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path ?? '', s.signedUrl])));
+      setUrls(Object.fromEntries((signed ?? []).filter((s) => s.signedUrl).map((s) => [s.path ?? '', s.signedUrl as string] as [string, string])));
     }
   }, [profile]);
   useFocusEffect(useCallback(() => { load(); }, [load]));

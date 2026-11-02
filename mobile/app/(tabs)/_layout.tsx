@@ -22,7 +22,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: colors.paper } }}
-      tabBar={({ state, navigation }) => (
+      tabBar={({ state, navigation }: any) => (
         <View style={[styles.bar, { paddingBottom: insets.bottom + 10 }]}>
           {state.routes.map((route, i) => {
             const tab = TABS.find((t) => t.name === route.name);

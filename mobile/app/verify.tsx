@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Body, PixelButton, StepHeader, Title } from '@/components/ui';
@@ -15,7 +15,7 @@ export default function Verify() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [wait, setWait] = useState(60);
-  const input = useRef<TextInput>(null);
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
 
   useEffect(() => {
     const id = setInterval(() => setWait((w) => (w > 0 ? w - 1 : 0)), 1000);

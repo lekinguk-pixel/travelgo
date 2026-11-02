@@ -60,7 +60,7 @@ export default function StampNearest() {
   );
 
   const closest = nearby?.[0];
-  const ready = closest && closest.distanceM <= closest.radius_m;
+  const ready = !!closest && (closest.distanceM ?? Infinity) <= closest.radius_m;
   return (
     <SafeAreaView style={styles.wrap} edges={['top']}>
       <Label color={colors.stamp} style={{ fontSize: 11 }}>Stamp a landmark</Label>
@@ -69,7 +69,7 @@ export default function StampNearest() {
       {nearby === null && !error ? <ActivityIndicator color={colors.ink} /> : null}
       {closest ? (
         <>
-          <Body>{ready ? 'Take a photo of yourself here to collect the stamp.' : `${closest.name} is ${formatDistance(closest.distanceM)}. Get within ${closest.radius_m} m to stamp it.`}</Body>
+          <Body>{ready ? 'Take a photo of yourself here to collect the stamp.' : `${closest.name} is ${formatDistance(closest.distanceM ?? null)}. Get within ${closest.radius_m} m to stamp it.`}</Body>
           {ready ? <PixelButton label={`Stamp ${closest.name}`} onPress={() => router.push(`/camera/${closest.id}`)} /> : null}
           <View style={{ gap: 10 }}>
             {nearby!.map((l) => <LandmarkRow key={l.id} landmark={l} onPress={() => router.push(`/camera/${l.id}`)} />)}

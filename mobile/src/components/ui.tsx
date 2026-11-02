@@ -12,7 +12,7 @@ export function PixelArt({ rows, palette, size, style }: { rows: Bitmap; palette
   const w = rows[0].length, h = rows.length;
   const paths = bitmapToPaths(rows, palette);
   return (
-    <Svg width={size * w} height={size * h} viewBox={`0 0 ${w} ${h}`} style={style} shapeRendering="crispEdges">
+    <Svg width={size * w} height={size * h} viewBox={`0 0 ${w} ${h}`} style={style} {...({ shapeRendering: 'crispEdges' } as object)}>
       {paths.map((p) => <Path key={p.color} d={p.d} fill={p.color} />)}
     </Svg>
   );
