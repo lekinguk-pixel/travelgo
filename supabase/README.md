@@ -64,3 +64,10 @@ Private bucket `stamp-photos`, max 10 MB, JPEG / PNG / WebP / HEIC. Each player 
   - Going live is a data change, no app update. For example, once you have a Travelpayouts marker and programme ID:
     `update public.partners set wrapper_template = 'https://tp.media/r?marker=YOUR_MARKER&p=PROGRAMME_ID&u={url}&sub_id={sub}' where key = 'stays';`
 - **Referrals**: `my_referral` gives each player a 6-character code; `redeem_referral` (first 14 days only, once) makes the two players friends and messages both.
+
+## Landmark photos and information
+
+- Landmarks and cities carry `summary`, `wiki_url` (Wikipedia, CC BY-SA 4.0) and a photo from Wikimedia Commons: `photo_url` (1280 px), `photo_thumb_url` (500 px), `photo_credit`, `photo_license`, `photo_license_url`, `photo_source_url`. The app shows the credit and licence under every photo.
+- Only Commons images are used (they're all freely licensed). Images hosted only on Wikipedia (often non-free) are skipped.
+- **Adding a city:** insert the city with a `wiki_title`, then add rows to `landmark_candidates` (name, Wikipedia title, rarity, skills, radius, is_major). A job (`pg_cron` "landmark-media", every 10 minutes, 40 requests a run) fetches each Wikipedia page through `pg_net`. A candidate becomes a real landmark only once Wikipedia or Wikidata gives coordinates within 40 km of the city. Failures are kept in `landmark_candidates.note`; rate-limited requests retry automatically.
+- Existing landmarks get their coordinates corrected from Wikipedia when ours were 150 m to 2 km out, and `location_verified` is set.

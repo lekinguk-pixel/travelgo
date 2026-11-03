@@ -1,10 +1,12 @@
+import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LandmarkRow } from '@/components/LandmarkRow';
 import { Body, Icon, Label, PixelButton } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { wikiImage } from '@/lib/media';
 import { supabase } from '@/lib/supabase';
 import { useChapter } from '@/lib/useChapter';
 import { colors, fonts, hardShadow } from '@/lib/theme';
@@ -16,9 +18,19 @@ export default function Explore() {
   const [tab, setTab] = useState<'todo' | 'done'>('todo');
   const [refreshing, setRefreshing] = useState(false);
   const [unread, setUnread] = useState(0);
+  const [cover, setCover] = useState<ReturnType<typeof wikiImage>>(null);
   useFocusEffect(useCallback(() => {
     supabase.rpc('inbox_unread_count').then(({ data }) => setUnread(typeof data === 'number' ? data : 0));
   }, []));
+  useEffect(() => {
+    // A photo of somewhere else for the Atlas card: the nearest other city that has one.
+    if (!profile?.home_city_id) return;
+    supabase.from('cities').select('id, photo_thumb_url').neq('id', profile.home_city_id).not('photo_thumb_url', 'is', null).limit(12)
+      .then(({ data }) => {
+        const list = data ?? [];
+        if (list.length) setCover(wikiImage(list[Math.floor(Math.random() * list.length)].photo_thumb_url as string));
+      });
+  }, [profile?.home_city_id]);
 
   if (error) return (
     <SafeAreaView style={styles.center}><Body>Couldn't load your chapter: {error}</Body><PixelButton label="Try again" onPress={reload} /></SafeAreaView>
@@ -85,6 +97,17 @@ export default function Explore() {
           </View>
         ) : null}
 
+        <Pressable onPress={() => router.push('/atlas')} accessibilityRole="button" accessibilityLabel="Open the Atlas"
+          style={({ pressed }) => [styles.atlas, hardShadow(pressed ? 1 : 4, pressed ? 1 : 4)]}>
+          {cover ? <Image source={cover} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
+          <View style={styles.atlasShade} />
+          <View style={{ gap: 2 }}>
+            <Label color={colors.gold}>Where next?</Label>
+            <Text style={styles.atlasTitle}>Open the Atlas</Text>
+            <Text style={styles.atlasSub}>Browse other cities, read about their landmarks and plan your next chapter.</Text>
+          </View>
+        </Pressable>
+
         <View style={styles.tabs}>
           {([['todo', `To collect · ${todo.length}`], ['done', `Stamped · ${done.length}`]] as const).map(([k, l]) => (
             <Pressable key={k} onPress={() => setTab(k)} accessibilityRole="tab" accessibilityState={{ selected: tab === k }}
@@ -97,7 +120,7 @@ export default function Explore() {
         {shown.length === 0 ? (
           <Body>{tab === 'todo' ? 'You\'ve stamped every landmark here. Legendary!' : 'No stamps yet. Pick a landmark above and go and find it.'}</Body>
         ) : shown.map((l) => (
-          <LandmarkRow key={l.id} landmark={l} onPress={l.stamped ? () => router.push('/(tabs)/book') : () => router.push(`/camera/${l.id}`)} />
+          <LandmarkRow key={l.id} landmark={l} onPress={() => router.push(`/landmark/${l.id}`)} />
         ))}
         {landmarks.length > 0 && landmarks[0].distanceM === null ? (
           <View style={styles.hint}><Icon name="map" color={colors.teal} size={16} /><Text style={styles.hintText}>Tap the Stamp button to turn on location and see what's nearby.</Text></View>
@@ -109,6 +132,10 @@ export default function Explore() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  atlas: { minHeight: 132, backgroundColor: colors.ink, borderWidth: 3, borderColor: colors.gold, padding: 16, justifyContent: 'flex-end', overflow: 'hidden' },
+  atlasShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(27,42,65,0.55)' },
+  atlasTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.paper },
+  atlasSub: { fontFamily: fonts.body, fontSize: 13, color: colors.paper },
   inboxBtn: { width: 48, height: 48, backgroundColor: colors.card, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: -8, right: -8, minWidth: 22, height: 22, paddingHorizontal: 4, backgroundColor: colors.stamp, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   badgeText: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.paper },

@@ -7,7 +7,7 @@ import { LandmarkRow } from '@/components/LandmarkRow';
 import { Body, Label, PixelButton, Title } from '@/components/ui';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
-import { distanceM, formatDistance, type Chapter, type Landmark } from '@/lib/useChapter';
+import { distanceM, formatDistance, LANDMARK_FIELDS, type Chapter, type Landmark } from '@/lib/useChapter';
 import { colors, fonts } from '@/lib/theme';
 
 type Near = Chapter['landmarks'][number];
@@ -30,7 +30,7 @@ export default function StampNearest() {
       // Landmarks within roughly 25 km.
       const d = 0.25;
       const [lm, st] = await Promise.all([
-        supabase.from('landmarks').select('id, city_id, name, lat, lng, radius_m, rarity, is_major, skills')
+        supabase.from('landmarks').select(LANDMARK_FIELDS)
           .gte('lat', lat - d).lte('lat', lat + d).gte('lng', lng - d * 1.6).lte('lng', lng + d * 1.6),
         supabase.from('stamps').select('landmark_id').eq('user_id', profile.id),
       ]);

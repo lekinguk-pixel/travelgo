@@ -6,8 +6,9 @@ import type { Rarity } from './theme';
 
 export type Landmark = {
   id: number; city_id: number; name: string; lat: number; lng: number; radius_m: number;
-  rarity: Rarity; is_major: boolean; skills: string[];
+  rarity: Rarity; is_major: boolean; skills: string[]; photo_thumb_url?: string | null;
 };
+export const LANDMARK_FIELDS = 'id, city_id, name, lat, lng, radius_m, rarity, is_major, skills, photo_thumb_url';
 export type Chapter = {
   city: { id: number; name: string; region: string | null; country_code: string } | null;
   landmarks: (Landmark & { stamped: boolean; distanceM: number | null })[];
@@ -47,7 +48,7 @@ export function useChapter(cityId: number | null | undefined, userId: string | u
     setError(null);
     const [cityR, lmR, stR, qR, rankR, pos] = await Promise.all([
       supabase.from('cities').select('id, name, region, country_code').eq('id', cityId).single(),
-      supabase.from('landmarks').select('id, city_id, name, lat, lng, radius_m, rarity, is_major, skills').eq('city_id', cityId),
+      supabase.from('landmarks').select(LANDMARK_FIELDS).eq('city_id', cityId),
       supabase.from('stamps').select('landmark_id, status').eq('user_id', userId),
       supabase.from('quests').select('id, name, description, xp_reward, quest_steps(landmark_id), quest_completions(user_id)').eq('city_id', cityId),
       supabase.rpc('leaderboard', { p_scope: 'city', p_scope_id: String(cityId), p_period: 'all', p_mode: 'solo', p_limit: 100 }),
