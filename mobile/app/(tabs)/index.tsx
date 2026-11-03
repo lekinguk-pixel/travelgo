@@ -1,10 +1,11 @@
-import { router } from 'expo-router';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LandmarkRow } from '@/components/LandmarkRow';
 import { Body, Icon, Label, PixelButton } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { supabase } from '@/lib/supabase';
 import { useChapter } from '@/lib/useChapter';
 import { colors, fonts, hardShadow } from '@/lib/theme';
 
@@ -14,6 +15,10 @@ export default function Explore() {
   const { chapter, error, reload } = useChapter(profile?.home_city_id, profile?.id);
   const [tab, setTab] = useState<'todo' | 'done'>('todo');
   const [refreshing, setRefreshing] = useState(false);
+  const [unread, setUnread] = useState(0);
+  useFocusEffect(useCallback(() => {
+    supabase.rpc('inbox_unread_count').then(({ data }) => setUnread(typeof data === 'number' ? data : 0));
+  }, []));
 
   if (error) return (
     <SafeAreaView style={styles.center}><Body>Couldn't load your chapter: {error}</Body><PixelButton label="Try again" onPress={reload} /></SafeAreaView>
@@ -31,10 +36,18 @@ export default function Explore() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await reload(); setRefreshing(false); }} />}>
-        <View style={{ gap: 2 }}>
-          <Label color={colors.stamp} style={{ fontSize: 11 }}>Chapter 1 · Your home city</Label>
-          <Text style={styles.city}>{city?.name}</Text>
-          <Text style={styles.meta}>{city?.region ?? city?.country_code} · {major} major landmarks</Text>
+        <View style={styles.header}>
+          <View style={{ gap: 2, flex: 1 }}>
+            <Label color={colors.stamp} style={{ fontSize: 11 }}>Chapter 1 · Your home city</Label>
+            <Text style={styles.city}>{city?.name}</Text>
+            <Text style={styles.meta}>{city?.region ?? city?.country_code} · {major} major landmarks</Text>
+          </View>
+          <Pressable onPress={() => router.push('/inbox')} hitSlop={8} accessibilityRole="button"
+            accessibilityLabel={unread ? `Inbox, ${unread} unread` : 'Inbox'}
+            style={({ pressed }) => [styles.inboxBtn, hardShadow(pressed ? 1 : 3, pressed ? 1 : 3)]}>
+            <Icon name="mail" />
+            {unread ? <View style={styles.badge}><Text style={styles.badgeText}>{unread > 9 ? '9+' : unread}</Text></View> : null}
+          </Pressable>
         </View>
 
         <View style={styles.pills}>
@@ -95,6 +108,10 @@ export default function Explore() {
 }
 
 const styles = StyleSheet.create({
+  header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  inboxBtn: { width: 48, height: 48, backgroundColor: colors.card, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
+  badge: { position: 'absolute', top: -8, right: -8, minWidth: 22, height: 22, paddingHorizontal: 4, backgroundColor: colors.stamp, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
+  badgeText: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.paper },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16, backgroundColor: colors.paper },
   body: { paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40, gap: 14 },
   city: { fontFamily: fonts.display, fontSize: 40, lineHeight: 44, color: colors.ink },

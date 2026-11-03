@@ -52,3 +52,15 @@ Private bucket `stamp-photos`, max 10 MB, JPEG / PNG / WebP / HEIC. Each player 
 - AI screening: edge function `moderate-photo` sends new photos to OpenAI's free `omni-moderation-latest` model. It needs the `OPENAI_API_KEY` secret (Supabase → Edge Functions → Secrets). Switch it on with
   `update public.app_settings set value = 'true' where key = 'ai_photo_screening';`
   While it's off, new photos are approved immediately. Photos stuck as `pending` for 30 minutes appear in the moderation queue.
+
+## Inbox, travel ideas and partner links
+
+- `inbox_messages` holds friend news (requests and accepts), chapter medals, invites and travel ideas. The app calls `my_inbox`, `inbox_unread_count`, `mark_inbox_read`, `dismiss_inbox` (with "not interested" for a city) and `inbox_click`.
+- **Travel ideas** are off by default and only for players aged 18+ (`set_travel_ideas`, `inbox_settings`). At most one a week, or a month if the player chooses. A job (`pg_cron`, Mondays 09:00 UTC) runs `generate_travel_ideas()`. Picks, in order: a city they're a few stamps from a tier in, a city a friend stamped in the last 30 days, a seasonal pick (`seasonal_picks`), the nearest city they haven't started. It skips home, dismissed, gold and recently suggested cities. Only home city and stamps are used, never live location.
+- **Partner links** are built server-side by `inbox_click`, which also counts the click (`inbox_clicks`). Templates live in `partners`:
+  - `url_template`: the partner page, with `{city}`, `{country}`, `{from_city}`, `{from_iata}`, `{to_iata}`, `{from_iata_lc}`, `{to_iata_lc}`.
+  - `wrapper_template`: the affiliate tracking link, with `{url}` (the encoded partner page) and `{sub}` (the campaign tag, e.g. `ti_friends_23_202645`, never anything about the player). While it's empty, links work but earn nothing.
+  - `promo_code` / `promo_text`: optional partner discount shown on the card.
+  - Going live is a data change, no app update. For example, once you have a Travelpayouts marker and programme ID:
+    `update public.partners set wrapper_template = 'https://tp.media/r?marker=YOUR_MARKER&p=PROGRAMME_ID&u={url}&sub_id={sub}' where key = 'stays';`
+- **Referrals**: `my_referral` gives each player a 6-character code; `redeem_referral` (first 14 days only, once) makes the two players friends and messages both.

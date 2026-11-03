@@ -116,6 +116,9 @@ export default function Me() {
           </View>
         )}
 
+        <TextLink label="Inbox" onPress={() => router.push('/inbox')} />
+        <TextLink label="Invite friends" color={colors.stamp} onPress={() => router.push('/invite')} />
+        <TextLink label="Inbox settings" color={colors.muted} onPress={() => router.push('/inbox-settings')} />
         {moderator ? <TextLink label="Moderation queue" color={colors.stamp} onPress={() => router.push('/moderation')} /> : null}
         <TextLink label="Sign out" color={colors.muted} onPress={async () => { await signOut(); router.replace('/'); }} />
       </ScrollView>
