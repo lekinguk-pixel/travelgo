@@ -43,7 +43,6 @@ Private bucket `stamp-photos`, max 10 MB, JPEG / PNG / WebP / HEIC. Each player 
 
 - London landmark coordinates are approximate (`location_verified = false`); verify against OpenStreetMap before launch.
 - Other UK cities exist but have no landmarks yet; generate them from open map data.
-- No moderator tooling yet for `pending_review` stamps or reports.
 - Supabase's linter flags the player-facing functions as callable SECURITY DEFINER functions. That is intentional: they are the only way to write game data.
 
 ## Moderation
