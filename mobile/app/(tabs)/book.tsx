@@ -8,7 +8,7 @@ import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow, rarityColor, type Rarity } from '@/lib/theme';
 
-type Entry = { id: number; claimed_at: string; status: string; photo_path: string; landmarks: { name: string; rarity: Rarity; cities: { name: string } | null } | null };
+type Entry = { id: number; claimed_at: string; status: string; photo_status: string; photo_path: string; landmarks: { name: string; rarity: Rarity; cities: { name: string } | null } | null };
 
 // 11 My book: your stamps as a scrapbook, newest first, grouped by month.
 export default function Book() {
@@ -20,7 +20,7 @@ export default function Book() {
   const load = useCallback(async () => {
     if (!profile) return;
     const { data } = await supabase.from('stamps')
-      .select('id, claimed_at, status, photo_path, landmarks(name, rarity, cities(name))')
+      .select('id, claimed_at, status, photo_status, photo_path, landmarks(name, rarity, cities(name))')
       .eq('user_id', profile.id).order('claimed_at', { ascending: false });
     const list = (data ?? []) as unknown as Entry[];
     setEntries(list);
@@ -77,7 +77,9 @@ export default function Book() {
                 <View key={e.id} style={[styles.polaroid, hardShadow(2, 3)]}>
                   <View style={[styles.photo, { borderColor: rarityColor(e.landmarks?.rarity ?? 'common') }]}>
                     {urls[e.photo_path] ? <Image source={{ uri: urls[e.photo_path] }} style={StyleSheet.absoluteFill} contentFit="cover" /> : <Icon name="user" color={colors.muted} size={28} />}
-                    {e.status === 'pending_review' ? <Text style={styles.pending}>BEING CHECKED</Text> : null}
+                    {e.status === 'pending_review' || e.photo_status === 'pending' ? <Text style={styles.pending}>BEING CHECKED</Text>
+                      : e.photo_status === 'flagged' || e.photo_status === 'hidden' ? <Text style={styles.pending}>UNDER REVIEW · ONLY YOU CAN SEE IT</Text>
+                      : e.photo_status === 'removed' ? <Text style={styles.pending}>HIDDEN BY A MODERATOR</Text> : null}
                   </View>
                   <View style={styles.caption}>
                     <Text style={styles.capName} numberOfLines={1}>{(e.landmarks?.name ?? '').toUpperCase()}</Text>

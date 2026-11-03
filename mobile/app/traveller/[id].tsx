@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar, BackHeader, timeAgo } from '@/components/social';
 import { Body, Label, SegmentBar, TextLink } from '@/components/ui';
@@ -12,7 +12,7 @@ import { friendlyError, supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow, rarityColor, type Rarity } from '@/lib/theme';
 
 type Traveller = { id: string; traveller_name: string; avatar: Look; total_xp: number; home_city_id: number | null; cities: { name: string } | null };
-type Stamp = { stamp_id: number; landmark: string; rarity: Rarity; city: string; claimed_at: string; photo_path: string };
+type Stamp = { stamp_id: number; landmark: string; rarity: Rarity; city: string; claimed_at: string; photo_path: string | null };
 
 // A friend's journey: their skills and stamp book.
 export default function TravellerJourney() {
@@ -37,8 +37,9 @@ export default function TravellerJourney() {
       if (j.error) { setError(friendlyError(j.error)); setStamps([]); return; }
       const list = (j.data ?? []) as Stamp[];
       setStamps(list);
-      if (list.length) {
-        const { data } = await supabase.storage.from('stamp-photos').createSignedUrls(list.map((x) => x.photo_path), 3600);
+      const paths = list.map((x) => x.photo_path).filter((p): p is string => !!p);
+      if (paths.length) {
+        const { data } = await supabase.storage.from('stamp-photos').createSignedUrls(paths, 3600);
         setUrls(Object.fromEntries((data ?? []).filter((d) => d.signedUrl).map((d) => [d.path ?? '', d.signedUrl as string] as [string, string])));
       }
     })();
@@ -90,10 +91,16 @@ export default function TravellerJourney() {
             {stamps.map((s) => (
               <View key={s.stamp_id} style={[styles.polaroid, hardShadow(2, 3)]}>
                 <View style={[styles.photo, { borderColor: rarityColor(s.rarity) }]}>
-                  {urls[s.photo_path] ? <Image source={{ uri: urls[s.photo_path] }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
+                  {s.photo_path && urls[s.photo_path] ? <Image source={{ uri: urls[s.photo_path] }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
                 </View>
                 <Text style={styles.cap} numberOfLines={1}>{s.landmark.toUpperCase()}</Text>
                 <Text style={styles.capSub} numberOfLines={1}>{s.city} · {timeAgo(s.claimed_at)}</Text>
+                {s.photo_path && who && profile && who.id !== profile.id ? (
+                  <Pressable onPress={() => router.push({ pathname: '/report/[id]', params: { id: String(s.stamp_id), name: who.traveller_name, place: s.landmark } })}
+                    hitSlop={8} accessibilityRole="button" accessibilityLabel={`Report photo at ${s.landmark}`}>
+                    <Text style={styles.reportLink}>REPORT</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ))}
           </View>
@@ -119,4 +126,5 @@ const styles = StyleSheet.create({
   photo: { aspectRatio: 1, backgroundColor: '#D7E9E5', borderBottomWidth: 3, overflow: 'hidden' },
   cap: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.ink, marginTop: 4 },
   capSub: { fontFamily: fonts.body, fontSize: 11, color: colors.muted },
+  reportLink: { fontFamily: fonts.label, fontSize: 9, color: colors.muted, marginTop: 4 },
 });

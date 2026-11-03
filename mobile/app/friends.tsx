@@ -10,7 +10,7 @@ import { friendlyError, supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow, rarityColor, type Rarity } from '@/lib/theme';
 
 type Person = { user_id: string; traveller_name: string; avatar: Look; total_xp: number; home_city: string | null; status: 'friend' | 'incoming' | 'outgoing'; since: string };
-type FeedItem = { stamp_id: number; user_id: string; traveller_name: string; avatar: Look; landmark: string; rarity: Rarity; city: string; claimed_at: string; photo_path: string; xp_awarded: number };
+type FeedItem = { stamp_id: number; user_id: string; traveller_name: string; avatar: Look; landmark: string; rarity: Rarity; city: string; claimed_at: string; photo_path: string | null; xp_awarded: number };
 
 // Friends: add by traveller name, answer requests, and follow your friends' journeys.
 export default function Friends() {
@@ -27,8 +27,9 @@ export default function Friends() {
     setPeople((p.data ?? []) as Person[]);
     const items = (f.data ?? []) as FeedItem[];
     setFeed(items);
-    if (items.length) {
-      const { data } = await supabase.storage.from('stamp-photos').createSignedUrls(items.map((i) => i.photo_path), 3600);
+    const paths = items.map((i) => i.photo_path).filter((p): p is string => !!p);
+    if (paths.length) {
+      const { data } = await supabase.storage.from('stamp-photos').createSignedUrls(paths, 3600);
       setUrls(Object.fromEntries((data ?? []).filter((d) => d.signedUrl).map((d) => [d.path ?? '', d.signedUrl as string] as [string, string])));
     }
   }, []);
@@ -112,9 +113,16 @@ export default function Friends() {
               <Text style={styles.when}>{timeAgo(f.claimed_at)}</Text>
             </Pressable>
             <View style={[styles.photo, { borderColor: rarityColor(f.rarity) }]}>
-              {urls[f.photo_path] ? <Image source={{ uri: urls[f.photo_path] }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
+              {f.photo_path && urls[f.photo_path] ? <Image source={{ uri: urls[f.photo_path] }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                : !f.photo_path ? <Text style={styles.checking}>Photo being checked</Text> : null}
               <View style={[styles.rarity, { backgroundColor: rarityColor(f.rarity) }]}><Text style={styles.rarityText}>{f.rarity.toUpperCase()} · +{f.xp_awarded} XP</Text></View>
             </View>
+            {f.photo_path ? (
+              <Pressable onPress={() => router.push({ pathname: '/report/[id]', params: { id: String(f.stamp_id), name: f.traveller_name, place: f.landmark } })}
+                hitSlop={8} style={{ alignSelf: 'flex-end' }} accessibilityRole="button" accessibilityLabel={`Report ${f.traveller_name}'s photo`}>
+                <Text style={styles.reportLink}>REPORT</Text>
+              </Pressable>
+            ) : null}
           </View>
         ))}
 
@@ -165,4 +173,6 @@ const styles = StyleSheet.create({
   rarity: { margin: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 2, borderColor: colors.ink },
   rarityText: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.paper },
   cancel: { fontFamily: fonts.label, fontSize: 11, color: colors.muted },
+  checking: { alignSelf: 'center', marginBottom: 'auto', marginTop: 'auto', fontFamily: fonts.label, fontSize: 11, color: colors.teal },
+  reportLink: { fontFamily: fonts.label, fontSize: 10, color: colors.muted },
 });

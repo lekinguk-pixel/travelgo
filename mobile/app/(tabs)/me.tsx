@@ -18,10 +18,12 @@ export default function Me() {
   const [xp, setXp] = useState<Record<string, number>>({});
   const [stats, setStats] = useState({ stamps: 0, cities: 0, countries: 0 });
   const [awards, setAwards] = useState<{ city: string; tier: string }[]>([]);
+  const [moderator, setModerator] = useState(false);
 
   useFocusEffect(useCallback(() => {
     if (!profile) return;
     refreshProfile();
+    supabase.rpc('is_moderator').then(({ data }) => setModerator(data === true));
     Promise.all([
       supabase.from('skill_xp').select('skill, xp').eq('user_id', profile.id),
       supabase.from('stamps').select('landmarks(city_id, cities(country_code))').eq('user_id', profile.id).eq('status', 'verified'),
@@ -114,6 +116,7 @@ export default function Me() {
           </View>
         )}
 
+        {moderator ? <TextLink label="Moderation queue" color={colors.stamp} onPress={() => router.push('/moderation')} /> : null}
         <TextLink label="Sign out" color={colors.muted} onPress={async () => { await signOut(); router.replace('/'); }} />
       </ScrollView>
     </SafeAreaView>
