@@ -40,7 +40,7 @@ export default function LandmarkDetail() {
         const perm = await Location.getForegroundPermissionsAsync();
         if (perm.granted) {
           const p = await Location.getLastKnownPositionAsync();
-          if (p) setAway(distanceM(p.coords.latitude, p.coords.longitude, (data as Detail).lat, (data as Detail).lng));
+          if (p) setAway(distanceM(p.coords.latitude, p.coords.longitude, (data as unknown as Detail).lat, (data as unknown as Detail).lng));
         }
       } catch { /* distance is optional */ }
     })();
@@ -128,7 +128,7 @@ export default function LandmarkDetail() {
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: colors.paper, padding: 24 },
   hero: { height: 340, backgroundColor: colors.ink, borderBottomWidth: 4, overflow: 'hidden', justifyContent: 'flex-end' },
-  noPhoto: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  noPhoto: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' },
   heroShade: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 170, backgroundColor: 'rgba(27,42,65,0.62)' },
   round: { position: 'absolute', left: 16, width: 44, height: 44, backgroundColor: 'rgba(27,42,65,0.75)', borderWidth: 2, borderColor: colors.paper, alignItems: 'center', justifyContent: 'center' },
   heroText: { padding: 20, gap: 6 },

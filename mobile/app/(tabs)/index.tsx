@@ -133,7 +133,7 @@ export default function Explore() {
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
   atlas: { minHeight: 132, backgroundColor: colors.ink, borderWidth: 3, borderColor: colors.gold, padding: 16, justifyContent: 'flex-end', overflow: 'hidden' },
-  atlasShade: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(27,42,65,0.55)' },
+  atlasShade: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(27,42,65,0.55)' },
   atlasTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.paper },
   atlasSub: { fontFamily: fonts.body, fontSize: 13, color: colors.paper },
   inboxBtn: { width: 48, height: 48, backgroundColor: colors.card, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
