@@ -97,6 +97,8 @@ export default function StampCamera() {
       });
       if (e) { await supabase.storage.from('stamp-photos').remove([path]); throw e; }
       lastStamp.value = { ...(data as StampReward), photoUri: photo };
+      // Ask for the AI photo check (it does nothing unless screening is switched on).
+      supabase.functions.invoke('moderate-photo', { body: { stamp_id: (data as StampReward).stamp_id } }).catch(() => {});
       router.replace('/stamp-collected');
     } catch (err) {
       setError(friendlyError(err));

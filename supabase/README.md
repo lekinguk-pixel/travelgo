@@ -45,3 +45,11 @@ Private bucket `stamp-photos`, max 10 MB, JPEG / PNG / WebP / HEIC. Each player 
 - Other UK cities exist but have no landmarks yet; generate them from open map data.
 - No moderator tooling yet for `pending_review` stamps or reports.
 - Supabase's linter flags the player-facing functions as callable SECURITY DEFINER functions. That is intentional: they are the only way to write game data.
+
+## Moderation
+
+- Every stamp has a `photo_status`: `approved` (friends can see it), `pending` (waiting for the AI check), `flagged` (AI or an error; hidden until reviewed), `hidden` (3+ player reports; hidden until reviewed) or `removed` (a moderator hid it; the stamp is kept).
+- Players report friends' photos with `report_stamp`. Moderators (table `moderators`) use `moderation_queue` and `moderate_stamp` (`keep`, `hide`, `remove`, where remove also takes back the XP). The app's moderator screen is at Me → Moderation queue.
+- AI screening: edge function `moderate-photo` sends new photos to OpenAI's free `omni-moderation-latest` model. It needs the `OPENAI_API_KEY` secret (Supabase → Edge Functions → Secrets). Switch it on with
+  `update public.app_settings set value = 'true' where key = 'ai_photo_screening';`
+  While it's off, new photos are approved immediately. Photos stuck as `pending` for 30 minutes appear in the moderation queue.
