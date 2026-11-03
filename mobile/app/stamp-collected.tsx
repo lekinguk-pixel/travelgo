@@ -1,8 +1,10 @@
 import { Image } from 'expo-image';
 import { Redirect, router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Fireworks, type FireworksSize } from '@/components/Fireworks';
 import { Body, Label, PixelButton, SegmentBar, TextLink } from '@/components/ui';
 import { lastStamp } from '@/lib/draft';
 import { levelProgress, SKILLS } from '@/lib/levels';
@@ -15,6 +17,18 @@ export default function StampCollected() {
   const s = lastStamp.value;
   const { refreshProfile, session } = useSession();
   const [skillXp, setSkillXp] = useState<Record<string, number>>({});
+  const [cityName, setCityName] = useState<string | null>(null);
+  const [showFireworks, setShowFireworks] = useState(true);
+  const [showBanner, setShowBanner] = useState(true);
+  const pop = useRef(new Animated.Value(0)).current;
+  const celebration = celebrate(s, cityName);
+  useEffect(() => {
+    if (!s || s.status !== 'verified') return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    if (s.rewards?.city?.city_id) supabase.from('cities').select('name').eq('id', s.rewards.city.city_id).single()
+      .then(({ data }) => setCityName((data as { name: string } | null)?.name ?? null));
+    Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshProfile();
     if (session) supabase.from('skill_xp').select('skill, xp').eq('user_id', session.user.id)
@@ -28,6 +42,16 @@ export default function StampCollected() {
   const city = r?.city;
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }}>
+      {celebration && showBanner ? (
+        <Pressable onPress={() => setShowBanner(false)} style={styles.bannerWrap} accessibilityRole="button" accessibilityLabel={`${celebration.title}. ${celebration.sub}. Tap to close.`}>
+          <Animated.View style={[styles.banner, celebration.size === 'epic' ? styles.bannerEpic : null, hardShadow(5, 5),
+            { transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1] }) }], opacity: pop }]}>
+            <Text style={styles.bannerSmall}>{celebration.kicker}</Text>
+            <Text style={[styles.bannerBig, celebration.size === 'epic' ? { fontSize: 30 } : null]}>{celebration.title}</Text>
+            <Text style={styles.bannerSub}>{celebration.sub}</Text>
+          </Animated.View>
+        </Pressable>
+      ) : null}
       <ScrollView contentContainerStyle={styles.body}>
         <View style={[styles.loot, { backgroundColor: rc }, hardShadow(4, 4)]}>
           <Text style={styles.star}>★</Text>
@@ -76,8 +100,30 @@ export default function StampCollected() {
         <PixelButton label="Back to my chapter" onPress={() => router.replace('/(tabs)')} style={{ marginTop: 8 }} />
         <TextLink label="See it in my book" onPress={() => router.replace('/(tabs)/book')} />
       </ScrollView>
+      {s.status === 'verified' && showFireworks ? (
+        <Fireworks size={celebration?.size ?? 'small'} onDone={() => { setShowFireworks(false); setTimeout(() => setShowBanner(false), 1500); }} />
+      ) : null}
     </SafeAreaView>
   );
+}
+
+type Celebration = { size: FireworksSize; kicker: string; title: string; sub: string };
+const skillName = (k: string) => SKILLS.find((x) => x.key === k)?.name ?? k;
+
+/** Picks the biggest moment in this stamp: a 99, a city chapter, a quest, or a level-up. */
+function celebrate(s: typeof lastStamp.value, cityName: string | null): Celebration | null {
+  const r = s?.rewards;
+  if (!s || s.status !== 'verified' || !r) return null;
+  const maxed = r.skills.find((g) => g.level_after >= 99 && g.level_before < 99);
+  if (maxed) return { size: 'epic', kicker: 'CONGRATULATIONS', title: `99 ${skillName(maxed.skill).toUpperCase()}!`, sub: `You've mastered ${skillName(maxed.skill)}. Legendary.` };
+  const city = cityName ?? 'City';
+  if (r.new_city_tiers.includes('gold')) return { size: 'epic', kicker: 'CHAPTER COMPLETE', title: `${city.toUpperCase()} GOLD!`, sub: `Every major landmark in ${city} stamped.` };
+  const tier = r.new_city_tiers.includes('silver') ? 'Silver' : r.new_city_tiers.includes('bronze') ? 'Bronze' : null;
+  if (tier) return { size: 'big', kicker: 'CHAPTER MILESTONE', title: `${city.toUpperCase()} ${tier.toUpperCase()}!`, sub: `You've earned the ${tier} chapter for ${city}.` };
+  if (r.quests_completed.length) return { size: 'big', kicker: 'QUEST COMPLETE', title: r.quests_completed[0], sub: 'Quest reward added to your XP.' };
+  const up = r.skills.find((g) => g.level_after > g.level_before);
+  if (up) return { size: 'big', kicker: 'LEVEL UP', title: `${skillName(up.skill).toUpperCase()} ${up.level_after}`, sub: `Your ${skillName(up.skill)} level is now ${up.level_after}.` };
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -98,4 +144,10 @@ const styles = StyleSheet.create({
   gainName: { fontFamily: fonts.display, fontSize: 16, color: colors.paper },
   gainNote: { fontFamily: fonts.label, fontSize: 11 },
   quest: { fontFamily: fonts.labelBold, fontSize: 12, color: colors.gold },
+  bannerWrap: { position: 'absolute', top: 70, left: 0, right: 0, zIndex: 10, alignItems: 'center', paddingHorizontal: 24 },
+  banner: { backgroundColor: colors.ink, borderWidth: 3, borderColor: colors.gold, paddingHorizontal: 20, paddingVertical: 14, alignItems: 'center', gap: 4, maxWidth: 360 },
+  bannerEpic: { borderWidth: 5, borderColor: colors.legendary },
+  bannerSmall: { fontFamily: fonts.label, fontSize: 10, color: colors.gold, letterSpacing: 1 },
+  bannerBig: { fontFamily: fonts.display, fontSize: 26, color: colors.paper, textAlign: 'center' },
+  bannerSub: { fontFamily: fonts.bodySemi, fontSize: 13, color: colors.silver, textAlign: 'center' },
 });

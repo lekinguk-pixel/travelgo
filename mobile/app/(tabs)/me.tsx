@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Label, PixelArt, SegmentBar, TextLink } from '@/components/ui';
 import { levelForXp, levelProgress, SKILLS } from '@/lib/levels';
@@ -70,6 +70,17 @@ export default function Me() {
           ))}
         </View>
 
+        <View style={styles.social}>
+          <Pressable onPress={() => router.push('/friends')} style={({ pressed }) => [styles.socialBtn, hardShadow(pressed ? 1 : 3, pressed ? 1 : 3)]} accessibilityRole="button">
+            <Text style={styles.socialTitle}>Friends</Text>
+            <Text style={styles.socialSub}>Follow their journeys</Text>
+          </Pressable>
+          <Pressable onPress={() => router.push('/clan')} style={({ pressed }) => [styles.socialBtn, { backgroundColor: colors.ink, borderColor: colors.gold }, hardShadow(pressed ? 1 : 3, pressed ? 1 : 3)]} accessibilityRole="button">
+            <Text style={[styles.socialTitle, { color: colors.gold }]}>Clan</Text>
+            <Text style={[styles.socialSub, { color: colors.silver }]}>Team up and compete</Text>
+          </Pressable>
+        </View>
+
         <Label>Skills</Label>
         <View style={styles.skills}>
           {SKILLS.map((s) => {
@@ -131,4 +142,8 @@ const styles = StyleSheet.create({
   medalDot: { width: 28, height: 28, borderWidth: 2, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center' },
   medalLetter: { fontFamily: fonts.display, fontSize: 12, color: colors.ink },
   medalCity: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },
+  social: { flexDirection: 'row', gap: 10 },
+  socialBtn: { flex: 1, backgroundColor: colors.card, borderWidth: 3, borderColor: colors.ink, padding: 14, gap: 2 },
+  socialTitle: { fontFamily: fonts.display, fontSize: 20, color: colors.ink },
+  socialSub: { fontFamily: fonts.body, fontSize: 12, color: colors.muted },
 });

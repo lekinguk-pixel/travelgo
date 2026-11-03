@@ -1,8 +1,8 @@
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Body, Icon, PixelArt, Title } from '@/components/ui';
+import { Body, Icon, PixelArt, TextLink, Title } from '@/components/ui';
 import { HERO_TOP, heroPalette, type Look } from '@/lib/pixel';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -72,7 +72,11 @@ export default function Ranks() {
         </Pressable>
 
         {rows === null ? <ActivityIndicator color={colors.ink} /> : rows.length === 0 ? (
-          <Body>{mode === 'friends' ? 'Add friends to compete with them here.' : mode === 'clans' ? 'No clans have earned XP here yet.' : 'Nobody has earned XP here yet. Collect a stamp to take first place!'}</Body>
+          <View style={{ gap: 8 }}>
+            <Body>{mode === 'friends' ? 'Add friends to compete with them here.' : mode === 'clans' ? 'No clans have earned XP here yet.' : 'Nobody has earned XP here yet. Collect a stamp to take first place!'}</Body>
+            {mode === 'friends' ? <TextLink label="Add friends" color={colors.stamp} onPress={() => router.push('/friends')} /> : null}
+            {mode === 'clans' ? <TextLink label="Start or join a clan" color={colors.stamp} onPress={() => router.push('/clan')} /> : null}
+          </View>
         ) : (
           <View style={[styles.list, hardShadow(3, 3)]}>
             {rows.map((r, i) => {
