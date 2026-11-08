@@ -28,6 +28,19 @@ function gridToPaths(grid: Grid) {
   return [...by.entries()].map(([color, parts]) => ({ color, d: parts.join('') }));
 }
 
+// Merge single-pixel lights with the same colour and (rounded) brightness into one path each.
+function groupCells(cells: { x: number; y: number; c: string; a: number }[]) {
+  const by = new Map<string, { c: string; a: number; d: string[] }>();
+  for (const cell of cells) {
+    const a = Math.round(Math.max(0, Math.min(1, cell.a)) * 10) / 10;
+    if (a <= 0) continue;
+    const k = cell.c + a;
+    let g = by.get(k); if (!g) { g = { c: cell.c, a, d: [] }; by.set(k, g); }
+    g.d.push(`M${cell.x} ${cell.y}h1v1h-1z`);
+  }
+  return [...by.entries()].map(([k, g]) => ({ k, c: g.c, a: g.a, d: g.d.join('') }));
+}
+
 function stamp(grid: Grid, rows: Bitmap, ox: number, oy: number, map: Palette) {
   rows.forEach((r, y) => [...r].forEach((ch, x) => {
     const c = map[ch];
@@ -82,11 +95,67 @@ const CLOUDS = [{ x: 4, y: 24, v: 0.9 }, { x: 40, y: 31, v: 0.6 }, { x: 58, y: 1
 const BIRDS = [{ x: -4, y: 33, v: 4.5, p: 0 }, { x: -12, y: 29, v: 4.0, p: 1.3 }, { x: -20, y: 35, v: 4.8, p: 2.2 }];
 const CHIMNEYS: [number, number][] = [[8, 68], [18, 71]];
 
-type Props = { look: Look; walking?: boolean; onWalkDone?: () => void };
+// Cozy extras: glowing windows, lanterns, a campfire and fireflies.
+const WINDOWS: [number, number][] = [[4, 75], [8, 75], [14, 78], [18, 78], [3, 84]];
+const LANTERNS: [number, number][] = [[37, 68], [51, 62]];
+const FIRE = { x: 55, y: 83 };
+const FLAMES: Bitmap[] = [
+  ['..a..', '..a..', '.aba.', '.bcb.', 'bcdcb'],
+  ['.a...', '..a..', '..ab.', '.bcb.', 'bcdcb'],
+  ['...a.', '..a..', '.ba..', '.bcb.', 'bcdcb'],
+  ['.....', '..a..', '.aba.', 'abcba', 'bcdcb'],
+];
+const MOON: Bitmap = ['..###..', '.##....', '##.....', '##.....', '##.....', '.##....', '..###..'];
+const FLAME_PAL = { a: '#FFE7A3', b: '#F7C766', c: '#E0705F', d: '#C8553D' };
 
-export function TitleScene({ look, walking = false, onWalkDone }: Props) {
+// Extra sky above the scene and extra meadow below it, so the scene can fill a tall screen.
+function buildExtras(top: number, bottom: number) {
+  const rects: { d: string; c: string }[] = [];
+  const sky: Record<string, string[]> = {};
+  const add = (c: string, x: number, y: number, w = 1) => { (sky[c] ??= []).push(`M${x} ${y}h${w}v1h-${w}z`); };
+  for (let y = -top; y < 0; y++) {
+    const deep = y < -top * 0.55;
+    const c = deep ? '#141633' : '#1A1D45';
+    add(c, 0, y, W);
+    if (y === Math.floor(-top * 0.55)) for (let x = 0; x < W; x += 2) add('#1A1D45', x + (y & 1), y);
+    if (y === -1) for (let x = 0; x < W; x += 2) add('#1F2250', x, y);
+  }
+  let seed = 7; const rnd = () => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+  for (let y = H; y < H + bottom; y++) {
+    const t = Math.min(1, (y - 63) / (H - 1 - 63));
+    const cx = pathX(Math.min(H - 1, y)) - Math.round((y - H) * 0.15);
+    const w = Math.round(1 + 12 * t * t + 2 * t) + Math.round((y - H) * 0.25);
+    add('#4E9F5A', 0, y, W);
+    for (let x = Math.max(0, cx - w); x <= Math.min(W - 1, cx + w); x++) add(x === cx - w || x === cx + w ? '#C9A465' : '#E8C98A', x, y);
+  }
+  for (let i = 0; i < bottom * 3; i++) {
+    const x = Math.floor(rnd() * W), y = H + Math.floor(rnd() * bottom);
+    add(['#3F8A5E', '#3F8A5E', '#F6B07A', '#F7C766', '#E0705F'][Math.floor(rnd() * 5)], x, y);
+  }
+  for (const [c, parts] of Object.entries(sky)) rects.push({ c, d: parts.join('') });
+  const stars = Array.from({ length: Math.round((top * W) / 45) }, () => ({
+    x: Math.floor(rnd() * W), y: -top + Math.floor(rnd() * Math.max(1, top)), gold: rnd() > 0.75, big: rnd() > 0.85, s: 0.6 + rnd() * 2.2, p: rnd() * 6.28,
+  }));
+  const flies = Array.from({ length: 14 }, () => ({ x: rnd() * W, y: 64 + rnd() * (H - 64 + bottom * 0.25), s: 0.3 + rnd() * 0.6, p: rnd() * 6.28, r: 1.5 + rnd() * 3 }));
+  return { rects, stars, flies };
+}
+
+type Props = {
+  look: Look; walking?: boolean; onWalkDone?: () => void;
+  /** Fill this height (dp) by adding sky above and meadow below. */
+  height?: number;
+  /** Extra meadow (dp) at the bottom, e.g. behind a panel laid over the scene. */
+  groundPad?: number;
+};
+
+export function TitleScene({ look, walking = false, onWalkDone, height: target, groundPad = 0 }: Props) {
   const { width } = useWindowDimensions();
   const statics = useMemo(buildStatic, []);
+  const unit = width / W;
+  const bottom = target ? Math.ceil(groundPad / unit) : 0;
+  const top = target ? Math.max(0, Math.ceil(target / unit - H - bottom)) : 0;
+  const extras = useMemo(() => buildExtras(top, bottom), [top, bottom]);
+  const sparks = useRef<{ x: number; y: number; born: number; drift: number }[]>([]);
   const [t, setT] = useState(0);
   const [reduce, setReduce] = useState(false);
   const t0 = useRef(Date.now());
@@ -139,18 +208,80 @@ export function TitleScene({ look, walking = false, onWalkDone }: Props) {
     else if (k < 1) stamp(front, HERO_MINI, fx - 1, Math.round(fy) - 3, pal);
     if (k >= 1 && !doneRef.current) { doneRef.current = true; setTimeout(() => onWalkDone?.(), 0); }
   }
-  const height = (width * H) / W;
+  // ---- cozy layer: sky sparkle, shooting stars, glowing windows, lanterns, campfire, fireflies ----
+  const glow: { x: number; y: number; c: string; a: number }[] = [];
+  const sec = t / 1000;
+  extras.stars.forEach((s) => {
+    const a = reduce ? 0.7 : 0.25 + 0.75 * Math.abs(Math.sin(sec * s.s + s.p));
+    const c = s.gold ? '#F7C766' : '#F6F0E2';
+    glow.push({ x: s.x, y: s.y, c, a });
+    if (s.big && a > 0.8) [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => glow.push({ x: s.x + dx, y: s.y + dy, c, a: a * 0.45 }));
+  });
+  if (!reduce) {
+    // A shooting star every ~7 s, somewhere new each time.
+    const cycle = Math.floor(sec / 7), phase = sec - cycle * 7;
+    if (phase < 1.1) {
+      const r = Math.abs(Math.sin(cycle * 12.9898) * 43758.5453) % 1;
+      const x0 = 4 + Math.floor(r * (W - 30)), y0 = -top + Math.floor(r * Math.max(4, top * 0.8 + 10));
+      const hx = x0 + phase * 26, hy = y0 + phase * 10;
+      for (let i = 0; i < 7; i++) glow.push({ x: Math.round(hx - i * 1.6), y: Math.round(hy - i * 0.6), c: i === 0 ? '#FFFFFF' : '#FFE7A3', a: (1 - i / 7) * (1 - phase / 1.1) });
+    }
+  }
+  const flick = (seed: number) => (reduce ? 0.8 : 0.65 + 0.35 * Math.abs(Math.sin(sec * 3.1 + seed) * Math.sin(sec * 1.7 + seed * 2)));
+  WINDOWS.forEach(([x, y], i) => {
+    const a = flick(i);
+    glow.push({ x, y, c: '#FFE7A3', a });
+    [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([dx, dy]) => glow.push({ x: x + dx, y: y + dy, c: '#F7C766', a: a * 0.25 }));
+  });
+  LANTERNS.forEach(([x, y], i) => {
+    front[y + 1][x] = '#6E4A2E'; front[y + 2][x] = '#6E4A2E'; front[y + 3][x] = '#6E4A2E'; front[y + 4][x] = '#6E4A2E';
+    front[y][x] = '#FFE7A3';
+    const a = flick(i + 7);
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) {
+      const d = Math.hypot(dx, dy); if (d > 0 && d <= 2.3) glow.push({ x: x + dx, y: y + dy, c: '#F7C766', a: a * (0.32 - d * 0.1) });
+    }
+  });
+  // Campfire with a warm pool of light and rising sparks.
+  const fa = flick(11);
+  for (let dy = -5; dy <= 5; dy++) for (let dx = -8; dx <= 8; dx++) {
+    const d = Math.hypot(dx / 1.6, dy); if (d <= 5.5) glow.push({ x: FIRE.x + 2 + dx, y: FIRE.y + 4 + dy, c: '#F7C766', a: fa * 0.26 * (1 - d / 5.5) });
+  }
+  stamp(front, FLAMES[reduce ? 0 : Math.floor(t / 140) % FLAMES.length], FIRE.x, FIRE.y - 1, FLAME_PAL);
+  stamp(front, ['K.K.K', '.KKK.'], FIRE.x, FIRE.y + 4, { K: '#6E4A2E' });
+  stamp(front, ['s......s', 'ss....ss'], FIRE.x - 1, FIRE.y + 4, { s: '#8A8FA8' });
+  stamp(front, ['LLLL'], FIRE.x + 7, FIRE.y + 3, { L: '#9E6B3F' });
+  // A crescent moon in the top-right corner, clear of the logo, with a soft round glow.
+  const moonY = top > 22 ? -top + 4 : -top + 1;
+  MOON.forEach((r, y) => [...r].forEach((ch, x) => { if (ch === '#') glow.push({ x: 59 + x, y: moonY + y, c: '#F6F0E2', a: 1 }); }));
+  for (let dy = -3; dy <= 9; dy++) for (let dx = -3; dx <= 9; dx++) {
+    const d = Math.hypot(dx - 3, dy - 3); if (d > 3.2 && d <= 6) glow.push({ x: 59 + dx, y: moonY + dy, c: '#F6F0E2', a: 0.08 * (1 - (d - 3.2) / 2.8) + 0.02 });
+  }
+  if (!reduce) {
+    if (Math.random() < 0.35) sparks.current.push({ x: FIRE.x + 2, y: FIRE.y, born: t, drift: Math.random() - 0.5 });
+    sparks.current = sparks.current.filter((s) => (t - s.born) / 1000 <= 1.6);
+    sparks.current.forEach((s) => { const age = (t - s.born) / 1000; glow.push({ x: Math.round(s.x + age * s.drift * 4), y: Math.round(s.y - age * 7), c: age < 0.6 ? '#FFE7A3' : '#F29A4E', a: 1 - age / 1.6 }); });
+    extras.flies.forEach((f) => {
+      const x = Math.round((f.x + Math.sin(sec * f.s + f.p) * f.r + W) % W), y = Math.round(f.y + Math.cos(sec * f.s * 1.3 + f.p) * 2);
+      const a = Math.max(0, Math.sin(sec * 2.2 + f.p * 3));
+      if (a > 0.05) { glow.push({ x, y, c: '#FFF3B0', a }); glow.push({ x: x + 1, y, c: '#F7C766', a: a * 0.3 }); glow.push({ x: x - 1, y, c: '#F7C766', a: a * 0.3 }); }
+    });
+  }
+
+  const rows = H + top + bottom;
+  const height = (width * rows) / W;
 
   return (
-    <View style={{ width, height, backgroundColor: '#1F2250', overflow: 'hidden' }} accessible accessibilityRole="image"
-      accessibilityLabel="A pixel-art traveller at the edge of their home town at dawn, looking down a path toward distant landmarks">
-      <Svg width={width} height={height} viewBox={`0 0 ${W} ${H}`} {...({ shapeRendering: 'crispEdges' } as object)}>
+    <View style={{ width, height, backgroundColor: '#141633', overflow: 'hidden' }} accessible accessibilityRole="image"
+      accessibilityLabel="A pixel-art traveller by a campfire at the edge of their home town at dawn, looking down a path toward distant landmarks">
+      <Svg width={width} height={height} viewBox={`0 ${-top} ${W} ${rows}`} {...({ shapeRendering: 'crispEdges' } as object)}>
+        {extras.rects.map((p) => <Path key={'x' + p.c} d={p.d} fill={p.c} />)}
         {statics.sky.map((p) => <Path key={'s' + p.color} d={p.d} fill={p.color} />)}
-        {starCells.map((c, i) => <Path key={'a' + i} d={`M${c.x} ${c.y}h1v1h-1z`} fill={c.c} fillOpacity={c.a} />)}
+        {groupCells(starCells).map((g) => <Path key={'a' + g.k} d={g.d} fill={g.c} fillOpacity={g.a} />)}
         {gridToPaths(back).map((p) => <Path key={'b' + p.color} d={p.d} fill={p.color} />)}
         {statics.fg.map((p) => <Path key={'f' + p.color} d={p.d} fill={p.color} />)}
-        {smokeCells.map((c, i) => <Path key={'m' + i} d={`M${c.x} ${c.y}h1v1h-1z`} fill={c.c} fillOpacity={c.a} />)}
+        {groupCells(smokeCells).map((g) => <Path key={'m' + g.k} d={g.d} fill={g.c} fillOpacity={g.a} />)}
         {gridToPaths(front).map((p) => <Path key={'h' + p.color} d={p.d} fill={p.color} />)}
+        {groupCells(glow).map((g) => <Path key={'g' + g.k} d={g.d} fill={g.c} fillOpacity={g.a} />)}
       </Svg>
     </View>
   );
