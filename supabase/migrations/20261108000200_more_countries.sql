@@ -193,3 +193,9 @@ join (values
   ('Zurich', 12, 'Christmas markets by the lake')
 ) as v(name, month, reason) on c.name = v.name
 on conflict do nothing;
+
+-- Title fixes after the first fetch.
+update public.landmark_candidates lc set name = 'Hofkirche', wiki_title = 'Hofkirche, Lucerne', status = 'new', note = null
+from public.cities c where lc.city_id = c.id and c.name = 'Lucerne' and lc.name = 'Church of St. Leodegar';
+update public.landmark_candidates lc set status = 'failed', note = 'No English Wikipedia article; left out'
+from public.cities c where lc.city_id = c.id and c.name = 'Lucerne' and lc.name = 'Musegg Wall';
