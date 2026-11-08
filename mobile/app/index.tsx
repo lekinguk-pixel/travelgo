@@ -2,6 +2,7 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PixelLogo } from '@/components/PixelLogo';
 import { TitleScene } from '@/components/TitleScene';
 import { PixelButton, TextLink } from '@/components/ui';
 import { DEFAULT_LOOK } from '@/lib/pixel';
@@ -15,7 +16,7 @@ const HEADLINE = 'Your adventure starts here...';
 export default function TitleScreen() {
   const { session, profile } = useSession();
   const insets = useSafeAreaInsets();
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const [panelH, setPanelH] = useState(300);
   const [typed, setTyped] = useState(0);
   const [reduce, setReduce] = useState(false);
@@ -56,13 +57,17 @@ export default function TitleScreen() {
       </View>
 
       <Animated.View style={[styles.logoWrap, { top: insets.top + 28, transform: [{ translateY: lift }] }]} pointerEvents="none">
-        <Text style={styles.tagline}>✦ THE REAL-WORLD TRAVEL GAME ✦</Text>
-        <View>
-          <Text style={[styles.logo, styles.logoShadow2]}>mmGO</Text>
-          <Text style={[styles.logo, styles.logoShadow1]}>mmGO</Text>
-          <Text style={styles.logo}>mmGO</Text>
+        <View style={styles.ribbon}>
+          <View style={styles.gem} />
+          <Text style={styles.tagline}>THE REAL-WORLD TRAVEL GAME</Text>
+          <View style={styles.gem} />
         </View>
-        <Text style={styles.subline}>Massively multiplayer · in real life</Text>
+        <View style={{ marginVertical: 10 }}>
+          <PixelLogo width={Math.min(width - 40, 380)} />
+        </View>
+        <View style={styles.subRibbon}>
+          <Text style={styles.subline}>MASSIVELY MULTIPLAYER · IN REAL LIFE</Text>
+        </View>
       </Animated.View>
 
       <Animated.View onLayout={(e) => setPanelH(Math.round(e.nativeEvent.layout.height))}
@@ -92,25 +97,24 @@ export default function TitleScreen() {
   );
 }
 
-const LOGO = 88;
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#141633' },
-  logoWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-  tagline: { fontFamily: fonts.labelBold, fontSize: 11, letterSpacing: 1, color: colors.gold, marginBottom: 2, textShadowColor: colors.ink, textShadowOffset: { width: 2, height: 2 }, textShadowRadius: 0 },
-  logo: { fontFamily: fonts.display, fontSize: LOGO, lineHeight: LOGO * 1.1, color: colors.paper, textShadowColor: colors.ink, textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 0, textAlign: 'center' },
-  logoShadow1: { position: 'absolute', left: 0, right: 0, top: 6, color: colors.stamp, textShadowColor: 'transparent' },
-  logoShadow2: { position: 'absolute', left: 0, right: 0, top: 11, color: colors.ink, textShadowColor: 'transparent' },
-  subline: { fontFamily: fonts.label, fontSize: 10, color: colors.paper, opacity: 0.85, marginTop: 6, textShadowColor: colors.ink, textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 0 },
+  logoWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: 16 },
+  ribbon: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.ink, borderWidth: 2, borderColor: colors.gold, paddingHorizontal: 12, paddingVertical: 5 },
+  gem: { width: 6, height: 6, backgroundColor: colors.gold, transform: [{ rotate: '45deg' }] },
+  tagline: { fontFamily: fonts.labelBold, fontSize: 12, letterSpacing: 1, color: colors.gold, textAlign: 'center', flexShrink: 1 },
+  subRibbon: { backgroundColor: 'rgba(27,42,65,0.85)', paddingHorizontal: 10, paddingVertical: 4 },
+  subline: { fontFamily: fonts.label, fontSize: 11, letterSpacing: 0.5, color: colors.paper, textAlign: 'center' },
   panelWrap: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 16 },
   panelOuter: { borderWidth: 3, borderColor: colors.ink, backgroundColor: colors.ink, padding: 3 },
   panel: { borderWidth: 3, borderColor: colors.gold, backgroundColor: 'rgba(27,42,65,0.92)', paddingHorizontal: 18, paddingTop: 18, paddingBottom: 14, gap: 10 },
   corners: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   corner: { position: 'absolute', width: 6, height: 6, backgroundColor: colors.gold },
-  chapter: { fontFamily: fonts.label, fontSize: 10, letterSpacing: 1, color: colors.gold },
+  chapter: { fontFamily: fonts.labelBold, fontSize: 12, letterSpacing: 1, color: colors.gold },
   headlineRow: { flexDirection: 'row', alignItems: 'flex-end' },
-  headline: { flexShrink: 1, fontFamily: fonts.display, fontSize: 26, lineHeight: 32, color: colors.paper },
+  headline: { flexShrink: 1, fontFamily: fonts.display, fontSize: 27, lineHeight: 34, color: colors.paper },
   headlineGhost: { color: 'transparent' },
   cursor: { fontFamily: fonts.display, fontSize: 22, lineHeight: 30, color: colors.gold, marginLeft: 2 },
-  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 21, color: '#D9D2C0' },
+  body: { fontFamily: fonts.body, fontSize: 15, lineHeight: 23, color: colors.paper },
   actions: { gap: 10, marginTop: 6 },
 });
