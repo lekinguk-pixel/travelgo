@@ -38,7 +38,7 @@ export default function HomeCity() {
     setBusy(true); setError('');
     const { error: e } = await supabase.rpc('create_traveller', {
       p_name: travellerDraft.name, p_date_of_birth: travellerDraft.dateOfBirth,
-      p_home_city_id: picked.id, p_avatar: travellerDraft.look,
+      p_home_city_id: picked.id, p_avatar: travellerDraft.avatar,
     });
     if (e) { setBusy(false); setError(friendlyError(e)); return; }
     await refreshProfile();

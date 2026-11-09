@@ -3,12 +3,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Body, Icon, PixelArt, TextLink, Title } from '@/components/ui';
-import { HERO_TOP, heroPalette, type Look } from '@/lib/pixel';
+import { Character } from '@/components/Character';
+import { toAvatar } from '@/lib/avatar';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow } from '@/lib/theme';
 
-type Row = { rank: number; entry_id: string; name: string; avatar: Look | null; xp: number; is_me: boolean };
+type Row = { rank: number; entry_id: string; name: string; avatar: unknown; xp: number; is_me: boolean };
 type Scope = { key: string; label: string; scope: 'city' | 'country' | 'continent' | 'world'; id: string | null };
 
 // 10 Leaderboards: city, country, continent and world; solo, friends or clans; this week or all time.
@@ -88,7 +89,7 @@ export default function Ranks() {
                   <View style={[styles.row, i > 0 && !gap ? styles.rowLine : null, r.is_me ? { backgroundColor: '#FBEDE6' } : null]}>
                     <View style={[styles.rank, m ? { backgroundColor: m, borderWidth: 2, borderColor: colors.ink } : null]}><Text style={styles.rankText}>{r.rank}</Text></View>
                     <View style={styles.avatar}>
-                      {r.avatar ? <PixelArt rows={HERO_TOP.slice(0, 6)} palette={heroPalette(r.avatar)} size={4} /> : <Text style={styles.clanInitial}>{r.name[0]}</Text>}
+                      {r.avatar ? <Character avatar={toAvatar(r.avatar)} size={2} crop="portrait" /> : <Text style={styles.clanInitial}>{r.name[0]}</Text>}
                     </View>
                     <Text style={[styles.name, r.is_me ? { fontFamily: fonts.bodyBold } : null]} numberOfLines={1}>{r.is_me && mode !== 'clans' ? `${r.name} (you)` : r.name}</Text>
                     <Text style={[styles.xp, r.is_me ? { color: colors.stamp } : null]}>{Number(r.xp).toLocaleString()} XP</Text>

@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TitleScene } from '@/components/TitleScene';
 import { Body, PixelButton, Title } from '@/components/ui';
-import { DEFAULT_LOOK } from '@/lib/pixel';
+import { toAvatar } from '@/lib/avatar';
 import { useSession } from '@/lib/session';
 import { colors, fonts, hardShadow } from '@/lib/theme';
 
@@ -18,7 +18,7 @@ export default function SendOff() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, paddingBottom: insets.bottom + 24 }}>
       <View>
-        <TitleScene look={profile?.avatar ?? DEFAULT_LOOK} walking onWalkDone={() => setArrived(true)} />
+        <TitleScene avatar={toAvatar(profile?.avatar)} walking onWalkDone={() => setArrived(true)} />
         {arrived ? (
           <View style={[styles.banner, hardShadow(4, 4)]}>
             <Text style={styles.bannerSmall}>CHAPTER 1 · {(city ?? 'Home').toUpperCase()}</Text>

@@ -2,9 +2,11 @@ import { Redirect, router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState, type ComponentRef } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Label, PixelArt, PixelButton, PixelInput, StepHeader, TextLink, Title } from '@/components/ui';
+import { AvatarEditor } from '@/components/AvatarEditor';
+import { Character } from '@/components/Character';
+import { Label, PixelButton, PixelInput, StepHeader, TextLink, Title } from '@/components/ui';
+import type { Avatar } from '@/lib/avatar';
 import { travellerDraft } from '@/lib/draft';
-import { HERO_TOP, heroPalette, LEGS_A, LOOK_OPTIONS, type Look } from '@/lib/pixel';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow } from '@/lib/theme';
@@ -21,10 +23,10 @@ function ageFrom(d: number, m: number, y: number): { valid: boolean; age: number
   return { valid: true, age };
 }
 
-// 04 Create your traveller: avatar colours, traveller name and date of birth (13+).
+// 04 Create your traveller: body, hair and clothes, traveller name and date of birth (13+).
 export default function CreateTraveller() {
   const { session, profile, signOut } = useSession();
-  const [look, setLook] = useState<Look>(travellerDraft.look);
+  const [avatar, setAvatar] = useState<Avatar>(travellerDraft.avatar);
   const [name, setName] = useState(travellerDraft.name);
   const [nameState, setNameState] = useState<NameState>(travellerDraft.name ? 'ok' : 'empty');
   const [[dd, mm, yyyy], setDob] = useState<[string, string, string]>(['', '', '']);
@@ -56,13 +58,12 @@ export default function CreateTraveller() {
 
   if (!session) return <Redirect href="/" />;
 
-  const pick = (part: keyof Look, hex: string) => setLook((l) => ({ ...l, [part]: hex }));
   const canContinue = nameState === 'ok' && dob.state === 'ok';
   function next() {
     if (dob.state !== 'ok') return;
     travellerDraft.name = name.trim();
     travellerDraft.dateOfBirth = dob.iso;
-    travellerDraft.look = look;
+    travellerDraft.avatar = avatar;
     router.push('/home-city');
   }
 
@@ -88,24 +89,12 @@ export default function CreateTraveller() {
           <Title>Create your traveller</Title>
           <View style={[styles.stage, hardShadow(4, 4)]}>
             <View style={styles.tag}><Text style={styles.tagText} numberOfLines={1}>{(name.trim() || 'New traveller').toUpperCase()} · LV 1</Text></View>
-            <PixelArt rows={[...HERO_TOP, ...LEGS_A]} palette={heroPalette(look)} size={10} style={styles.sprite} />
             <View style={styles.grass} />
+            <Character avatar={avatar} size={7} style={styles.sprite} />
           </View>
 
-          <View style={{ gap: 10 }}>
-            {(Object.keys(LOOK_OPTIONS) as (keyof Look)[]).map((part) => (
-              <View key={part} style={styles.swRow} accessibilityRole="radiogroup" accessibilityLabel={`${part} colour`}>
-                <Label style={{ width: 52 }}>{part}</Label>
-                {LOOK_OPTIONS[part].map(([label, hex]) => {
-                  const on = look[part] === hex;
-                  return (
-                    <Pressable key={hex} onPress={() => pick(part, hex)} accessibilityRole="radio" accessibilityState={{ selected: on }} accessibilityLabel={`${part}: ${label}`}
-                      style={[styles.swatch, { backgroundColor: hex }, on ? [styles.swatchOn, hardShadow(3, 3)] : null]} />
-                  );
-                })}
-              </View>
-            ))}
-          </View>
+          <AvatarEditor value={avatar} onChange={setAvatar} />
+          <Text style={styles.hint}>Unlock rare outfits by stamping famous landmarks, like a beret at the Eiffel Tower.</Text>
 
           <View style={{ gap: 6 }}>
             <Label>Traveller name</Label>
@@ -137,10 +126,11 @@ export default function CreateTraveller() {
 
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingTop: 10, paddingBottom: 32, gap: 16 },
-  stage: { height: 170, backgroundColor: colors.ink, borderWidth: 3, borderColor: colors.gold, overflow: 'hidden', alignItems: 'center' },
+  stage: { height: 230, backgroundColor: colors.ink, borderWidth: 3, borderColor: colors.gold, overflow: 'hidden', alignItems: 'center' },
   tag: { marginTop: 12, backgroundColor: colors.stamp, borderWidth: 1, borderColor: colors.paper, paddingHorizontal: 8, paddingVertical: 3, maxWidth: '90%' },
   tagText: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.paper },
-  sprite: { position: 'absolute', bottom: 22 },
+  sprite: { position: 'absolute', bottom: 14 },
+  hint: { fontFamily: fonts.body, fontSize: 13, color: colors.muted, lineHeight: 19 },
   grass: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 28, backgroundColor: colors.grass, borderTopWidth: 4, borderTopColor: colors.grassTop },
   swRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   swatch: { width: 36, height: 36, borderWidth: 2, borderColor: colors.line },

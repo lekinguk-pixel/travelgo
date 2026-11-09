@@ -5,10 +5,11 @@ import { Icon } from '@/components/ui';
 import { useSession } from '@/lib/session';
 import { colors, fonts, hardShadow } from '@/lib/theme';
 
-const TABS: { name: string; label: string; icon: 'map' | 'book' | 'camera' | 'trophy' | 'user' }[] = [
+const TABS: { name: string; label: string; icon: 'map' | 'book' | 'camera' | 'trophy' | 'user' | 'globe' }[] = [
   { name: 'index', label: 'Explore', icon: 'map' },
-  { name: 'book', label: 'My book', icon: 'book' },
+  { name: 'book', label: 'Book', icon: 'book' },
   { name: 'stamp', label: 'Stamp', icon: 'camera' },
+  { name: 'journey', label: 'Journey', icon: 'globe' },
   { name: 'ranks', label: 'Ranks', icon: 'trophy' },
   { name: 'me', label: 'Me', icon: 'user' },
 ];
@@ -54,8 +55,8 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderTopWidth: 3, borderTopColor: colors.ink, paddingTop: 8, paddingHorizontal: 18 },
-  item: { alignItems: 'center', gap: 4, minWidth: 56, paddingVertical: 4 },
-  label: { fontFamily: fonts.label, fontSize: 9 },
-  stampBtn: { width: 64, height: 64, backgroundColor: colors.stamp, borderWidth: 3, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center', marginTop: -24 },
+  bar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderTopWidth: 3, borderTopColor: colors.ink, paddingTop: 8, paddingHorizontal: 8 },
+  item: { alignItems: 'center', gap: 4, minWidth: 48, paddingVertical: 4 },
+  label: { fontFamily: fonts.label, fontSize: 8 },
+  stampBtn: { width: 58, height: 58, backgroundColor: colors.stamp, borderWidth: 3, borderColor: colors.ink, alignItems: 'center', justifyContent: 'center', marginTop: -24 },
 });

@@ -1,16 +1,17 @@
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { HERO_TOP, heroPalette, type Look } from '@/lib/pixel';
+import { toAvatar } from '@/lib/avatar';
 import { colors, fonts } from '@/lib/theme';
-import { Icon, PixelArt } from './ui';
+import { Character } from './Character';
+import { Icon } from './ui';
 
 /** Head-and-shoulders pixel avatar in a dark square. */
-export function Avatar({ look, size = 40, ring }: { look: Look | null | undefined; size?: number; ring?: string }) {
-  const cell = Math.max(2, Math.floor(size / 10));
+export function Avatar({ look, size = 40, ring }: { look: unknown; size?: number; ring?: string }) {
+  const cell = Math.max(1, Math.floor(size / 16));
   return (
     <View style={[styles.avatar, { width: size, height: size }, ring ? { borderWidth: 2, borderColor: ring } : null]}>
-      {look ? <PixelArt rows={HERO_TOP.slice(0, 6)} palette={heroPalette(look)} size={cell} /> : null}
+      {look ? <Character avatar={toAvatar(look)} size={cell} crop="portrait" /> : null}
     </View>
   );
 }

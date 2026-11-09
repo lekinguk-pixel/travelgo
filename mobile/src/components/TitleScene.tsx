@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, useWindowDimensions, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { HERO_MINI, HERO_TOP, heroPalette, LEGS_A, LEGS_B, type Bitmap, type Look, type Palette } from '@/lib/pixel';
+import { backPalette, DEFAULT_AVATAR, type Avatar } from '@/lib/avatar';
+import { HERO_MINI, HERO_TOP, LEGS_A, LEGS_B, type Bitmap, type Palette } from '@/lib/pixel';
 
 // The mmGO title scene: a traveller at the edge of their home town at dawn.
 // Same artwork and timings as design/title-screen-prototype.html.
@@ -141,14 +142,14 @@ function buildExtras(top: number, bottom: number) {
 }
 
 type Props = {
-  look: Look; walking?: boolean; onWalkDone?: () => void;
+  avatar?: Avatar; walking?: boolean; onWalkDone?: () => void;
   /** Fill this height (dp) by adding sky above and meadow below. */
   height?: number;
   /** Extra meadow (dp) at the bottom, e.g. behind a panel laid over the scene. */
   groundPad?: number;
 };
 
-export function TitleScene({ look, walking = false, onWalkDone, height: target, groundPad = 0 }: Props) {
+export function TitleScene({ avatar = DEFAULT_AVATAR, walking = false, onWalkDone, height: target, groundPad = 0 }: Props) {
   const { width } = useWindowDimensions();
   const statics = useMemo(buildStatic, []);
   const unit = width / W;
@@ -197,7 +198,7 @@ export function TitleScene({ look, walking = false, onWalkDone, height: target, 
     smoke.current = smoke.current.filter((s) => (t - s.born) / 1000 <= 2.6);
     smoke.current.forEach((s) => { const age = (t - s.born) / 1000; smokeCells.push({ x: Math.round(s.x + age * s.drift * 2), y: Math.round(s.y - age * 4), c: '#F6F0E2', a: 0.75 * (1 - age / 2.6) }); });
   }
-  const pal = heroPalette(look);
+  const pal = backPalette(avatar);
   if (walkStart.current === null) {
     const bob = reduce ? 0 : Math.floor(t / 520) % 2;
     stamp(front, HERO_TOP, 31, 77 + bob, pal); stamp(front, LEGS_A, 31, 85, pal);

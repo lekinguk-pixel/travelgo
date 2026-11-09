@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { PixelLogo } from '@/components/PixelLogo';
 import { TitleScene } from '@/components/TitleScene';
 import { PixelButton, TextLink } from '@/components/ui';
-import { DEFAULT_LOOK } from '@/lib/pixel';
 import { useSession } from '@/lib/session';
 import { colors, fonts } from '@/lib/theme';
 
@@ -53,7 +52,7 @@ export default function TitleScreen() {
   return (
     <View style={styles.root}>
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        <TitleScene look={DEFAULT_LOOK} height={height} groundPad={panelH + insets.bottom} />
+        <TitleScene height={height} groundPad={panelH + insets.bottom} />
       </View>
 
       <Animated.View style={[styles.logoWrap, { top: insets.top + 28, transform: [{ translateY: lift }] }]} pointerEvents="none">

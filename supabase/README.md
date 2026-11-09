@@ -71,3 +71,16 @@ Private bucket `stamp-photos`, max 10 MB, JPEG / PNG / WebP / HEIC. Each player 
 - Only Commons images are used (they're all freely licensed). Images hosted only on Wikipedia (often non-free) are skipped.
 - **Adding a city:** insert the city with a `wiki_title`, then add rows to `landmark_candidates` (name, Wikipedia title, rarity, skills, radius, is_major). A job (`pg_cron` "landmark-media", every 10 minutes, 40 requests a run) fetches each Wikipedia page through `pg_net`. A candidate becomes a real landmark only once Wikipedia or Wikidata gives coordinates within 40 km of the city. Failures are kept in `landmark_candidates.note`; rate-limited requests retry automatically.
 - Existing landmarks get their coordinates corrected from Wikipedia when ours were 150 m to 2 km out, and `location_verified` is set.
+
+## Wardrobe and outfits
+
+- `items` is the clothing catalogue (slot: hat/top/bottom/shoes/neck/pack; source: `starter`, `landmark` or `journey`). `player_items` is what each player owns.
+- `item_drops` links location-exclusive items to landmarks. A trigger on `stamps` grants the item the first time a player's stamp at that landmark is verified (including stamps approved after review). `stamp_drops(stamp_id)` lists what a stamp unlocked.
+- `profiles.avatar` is v2 JSON: body (`masc`/`fem`/`neutral`), skin, hair + hairColor, and an item key + colour per slot. A trigger checks every save: starter items or owned items only, valid colours. Old 3-colour looks are converted automatically.
+- Add a new exclusive: insert into `items` (source `landmark`), add its pixel art in `mobile/src/lib/avatar.ts` (`ART`), and insert the landmark into `item_drops`.
+
+## Digital journey (idle game)
+
+- `journeys` (one row per player) and `postcards`. All progress is computed in `journey_sync(p_taps)` from timestamps: idle travel capped at 8 hours away, taps capped at 12 a second.
+- Speed: on foot 12 km/h, bike 25 (5 real stamps), train 80 (a bronze medal), plane 250 for trips over 800 km (500 with a pilot's licence: real stamps in 2 countries), times the real-world multiplier (1 + 2% per real stamp up to 100, +10/15/25% per bronze/silver/gold city) and +20% per companion level.
+- Rewards: coins (0.4 per km on arrival, +100 for a first visit, 30 an hour while parked), postcards, journey-shop outfits (`journey_buy_item`), upgrades (`journey_upgrade`: boots, companion). Never XP or leaderboard places.

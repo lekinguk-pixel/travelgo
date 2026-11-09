@@ -1,10 +1,10 @@
-import { DEFAULT_LOOK, type Look } from './pixel';
+import { DEFAULT_AVATAR, type Avatar } from './avatar';
 
 /** The traveller being created during sign-up, kept between the onboarding screens. */
-export const travellerDraft: { name: string; dateOfBirth: string; look: Look } = {
+export const travellerDraft: { name: string; dateOfBirth: string; avatar: Avatar } = {
   name: '',
   dateOfBirth: '',
-  look: { ...DEFAULT_LOOK },
+  avatar: { ...DEFAULT_AVATAR },
 };
 
 /** The email address the sign-in code was sent to. */

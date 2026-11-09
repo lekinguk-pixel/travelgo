@@ -2,9 +2,10 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Label, PixelArt, SegmentBar, TextLink } from '@/components/ui';
+import { Label, SegmentBar, TextLink } from '@/components/ui';
 import { levelForXp, levelProgress, SKILLS } from '@/lib/levels';
-import { HERO_TOP, heroPalette, LEGS_A } from '@/lib/pixel';
+import { Character } from '@/components/Character';
+import { toAvatar } from '@/lib/avatar';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow } from '@/lib/theme';
@@ -53,9 +54,10 @@ export default function Me() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}>
         <View style={styles.player}>
-          <View style={[styles.avatar, hardShadow(4, 4)]}>
-            <PixelArt rows={[...HERO_TOP, ...LEGS_A]} palette={heroPalette(profile.avatar)} size={6} />
-          </View>
+          <Pressable onPress={() => router.push('/wardrobe')} accessibilityRole="button" accessibilityLabel="Open your wardrobe" style={[styles.avatar, hardShadow(4, 4)]}>
+            <Character avatar={toAvatar(profile.avatar)} size={4} />
+            <View style={styles.editBadge}><Text style={styles.editText}>EDIT</Text></View>
+          </Pressable>
           <View style={{ flex: 1, gap: 3 }}>
             <Text style={styles.name} numberOfLines={1}>{profile.traveller_name}</Text>
             <Text style={styles.sub}>Adventurer · Total level {totalLevel}</Text>
@@ -116,6 +118,7 @@ export default function Me() {
           </View>
         )}
 
+        <TextLink label="Wardrobe" onPress={() => router.push('/wardrobe')} />
         <TextLink label="Inbox" onPress={() => router.push('/inbox')} />
         <TextLink label="Invite friends" color={colors.stamp} onPress={() => router.push('/invite')} />
         <TextLink label="Inbox settings" color={colors.muted} onPress={() => router.push('/inbox-settings')} />
@@ -129,7 +132,9 @@ export default function Me() {
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40, gap: 16 },
   player: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 76, height: 76, backgroundColor: colors.ink, borderWidth: 4, borderColor: colors.gold, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 4, overflow: 'hidden' },
+  avatar: { width: 84, height: 112, backgroundColor: colors.ink, borderWidth: 4, borderColor: colors.gold, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 4, overflow: 'hidden' },
+  editBadge: { position: 'absolute', top: 0, right: 0, backgroundColor: colors.gold, paddingHorizontal: 4, paddingVertical: 1 },
+  editText: { fontFamily: fonts.labelBold, fontSize: 8, color: colors.ink },
   name: { fontFamily: fonts.display, fontSize: 24, color: colors.ink },
   sub: { fontFamily: fonts.bodySemi, fontSize: 13, color: colors.muted },
   stats: { flexDirection: 'row', gap: 8 },

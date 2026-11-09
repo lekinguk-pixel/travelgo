@@ -1,12 +1,11 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Look } from './pixel';
 import { supabase } from './supabase';
 
 export type Profile = {
   id: string;
   traveller_name: string;
-  avatar: Look;
+  avatar: unknown; // stored JSON; read it with toAvatar()
   home_city_id: number | null;
   total_xp: number;
   created_at: string;

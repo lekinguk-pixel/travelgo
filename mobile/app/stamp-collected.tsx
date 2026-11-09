@@ -4,7 +4,9 @@ import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Character } from '@/components/Character';
 import { Fireworks, type FireworksSize } from '@/components/Fireworks';
+import { toAvatar } from '@/lib/avatar';
 import { Body, Label, PixelButton, SegmentBar, TextLink } from '@/components/ui';
 import { lastStamp } from '@/lib/draft';
 import { levelProgress, SKILLS } from '@/lib/levels';
@@ -15,7 +17,8 @@ import { colors, fonts, hardShadow, rarityColor } from '@/lib/theme';
 // 08 Stamp collected: the loot screen.
 export default function StampCollected() {
   const s = lastStamp.value;
-  const { refreshProfile, session } = useSession();
+  const { refreshProfile, session, profile } = useSession();
+  const [drops, setDrops] = useState<{ key: string; name: string; slot: string; rarity: string; description: string | null }[]>([]);
   const [skillXp, setSkillXp] = useState<Record<string, number>>({});
   const [cityName, setCityName] = useState<string | null>(null);
   const [showFireworks, setShowFireworks] = useState(true);
@@ -28,6 +31,8 @@ export default function StampCollected() {
     if (s.rewards?.city?.city_id) supabase.from('cities').select('name').eq('id', s.rewards.city.city_id).single()
       .then(({ data }) => setCityName((data as { name: string } | null)?.name ?? null));
     Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
+    // Location-exclusive outfit drops for this landmark.
+    supabase.rpc('stamp_drops', { p_stamp_id: s.stamp_id }).then(({ data }) => setDrops((data ?? []) as typeof drops));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshProfile();
@@ -91,6 +96,18 @@ export default function StampCollected() {
               {r.quests_completed.map((q) => <Text key={q} style={styles.quest}>Quest complete: {q}</Text>)}
               {r.new_city_tiers.map((t) => <Text key={t} style={styles.quest}>{t.toUpperCase()} chapter earned!</Text>)}
             </View>
+            {drops.map((d) => (
+              <Pressable key={d.key} onPress={() => router.push('/wardrobe')} accessibilityRole="button" accessibilityLabel={`New outfit unlocked: ${d.name}. Open wardrobe.`}
+                style={[styles.drop, { borderColor: rarityColor(d.rarity as typeof s.rarity) }, hardShadow(4, 4)]}>
+                <View style={styles.dropArt}><Character avatar={{ ...toAvatar(profile?.avatar), [d.slot]: d.key }} size={4} /></View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={[styles.dropKicker, { color: rarityColor(d.rarity as typeof s.rarity) }]}>{d.rarity.toUpperCase()} OUTFIT UNLOCKED</Text>
+                  <Text style={styles.dropName}>{d.name}</Text>
+                  {d.description ? <Text style={styles.dropDesc}>{d.description}</Text> : null}
+                  <Text style={styles.dropCta}>WEAR IT NOW ›</Text>
+                </View>
+              </Pressable>
+            ))}
             {city ? <Label style={{ alignSelf: 'center', fontSize: 11 }}>{`${city.stamped} / ${city.major_landmarks} stamped in this city`}</Label> : null}
           </>
         ) : (
@@ -127,6 +144,12 @@ function celebrate(s: typeof lastStamp.value, cityName: string | null): Celebrat
 }
 
 const styles = StyleSheet.create({
+  drop: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.ink, borderWidth: 3, padding: 12 },
+  dropArt: { width: 72, height: 100, alignItems: 'center', justifyContent: 'flex-end', backgroundColor: '#24365A' },
+  dropKicker: { fontFamily: fonts.labelBold, fontSize: 10 },
+  dropName: { fontFamily: fonts.display, fontSize: 20, color: colors.paper },
+  dropDesc: { fontFamily: fonts.body, fontSize: 12, color: colors.silver },
+  dropCta: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.gold, marginTop: 4 },
   body: { padding: 24, gap: 18, alignItems: 'stretch' },
   loot: { flexDirection: 'row', alignSelf: 'center', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 8, borderWidth: 3, borderColor: colors.ink },
   star: { fontFamily: fonts.display, fontSize: 16, color: colors.gold },
