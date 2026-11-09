@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Character } from '@/components/Character';
-import { ART, CLOTH_COLORS, HAIR_COLORS, HAIR_STYLES, SKIN_TONES, type Avatar, type BodyStyle, type Slot } from '@/lib/avatar';
+import { ART, CLOTH_COLORS, HAIR_COLORS, HAIR_STYLES, PET_COLORS, PET_KINDS, SKIN_TONES, type Avatar, type BodyStyle, type PetKind, type Slot } from '@/lib/avatar';
 import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow, rarityColor, type Rarity } from '@/lib/theme';
 
@@ -11,7 +11,8 @@ export type WardrobeItem = {
   landmark_id: number | null; landmark_name: string | null; city_name: string | null;
 };
 
-const TABS = ['Body', 'Hair', 'Clothes', 'Extras'] as const;
+const TABS = ['Body', 'Hair', 'Clothes', 'Extras', 'Pet'] as const;
+const PET_LABEL: Record<PetKind, string> = { none: 'No pet', cat: 'Cat', dog: 'Dog', rat: 'Rat', bird: 'Bird' };
 const BODY: { key: BodyStyle; label: string }[] = [{ key: 'masc', label: 'Masculine' }, { key: 'neutral', label: 'Neutral' }, { key: 'fem', label: 'Feminine' }];
 const HAIR_LABEL: Record<string, string> = { none: 'Bald', buzz: 'Buzz', short: 'Short', curly: 'Curly', long: 'Long', bob: 'Bob', bun: 'Bun', afro: 'Afro' };
 const SLOT_LABEL: Record<Slot, string> = { top: 'Top', bottom: 'Bottoms', shoes: 'Shoes', hat: 'Hat', neck: 'Neck', pack: 'Bag' };
@@ -53,7 +54,7 @@ export function AvatarEditor({ value, onChange, onLocked }: {
           <View style={styles.grid}>
             {BODY.map((b) => (
               <Tile key={b.key} on={value.body === b.key} label={b.label} onPress={() => set({ body: b.key })}>
-                <Character avatar={{ ...value, body: b.key }} size={4} />
+                <Character avatar={{ ...value, body: b.key }} size={4} noPet />
               </Tile>
             ))}
           </View>
@@ -78,6 +79,26 @@ export function AvatarEditor({ value, onChange, onLocked }: {
         </>
       ) : null}
 
+      {tab === 'Pet' ? (
+        <>
+          <Text style={styles.note}>Travelling with a furry or feathered friend? They'll sit beside your traveller wherever you go.</Text>
+          <View style={styles.grid}>
+            {(['none', ...PET_KINDS] as PetKind[]).map((k) => (
+              <Tile key={k} on={value.pet === k} label={PET_LABEL[k]}
+                onPress={() => set({ pet: k, petColor: k !== 'none' && !PET_COLORS[k].includes(value.petColor) ? PET_COLORS[k][0] : value.petColor })}>
+                <Character avatar={{ ...value, pet: k, petColor: k !== 'none' && !PET_COLORS[k].includes(value.petColor) ? PET_COLORS[k][0] : value.petColor }} size={3} />
+              </Tile>
+            ))}
+          </View>
+          {value.pet !== 'none' ? (
+            <>
+              <Text style={styles.h}>{PET_LABEL[value.pet]} colour</Text>
+              <Swatches colors={PET_COLORS[value.pet]} value={value.petColor} onPick={(c) => set({ petColor: c })} label="Pet colour" />
+            </>
+          ) : null}
+        </>
+      ) : null}
+
       {tab === 'Clothes' || tab === 'Extras' ? (
         <>
           <View style={styles.subTabs}>
@@ -90,14 +111,14 @@ export function AvatarEditor({ value, onChange, onLocked }: {
           <View style={styles.grid}>
             {['hat', 'neck', 'pack'].includes(sub) ? (
               <Tile on={current === 'none'} label="None" onPress={() => set({ [sub]: 'none' } as Partial<Avatar>)}>
-                <Character avatar={{ ...value, [sub]: 'none' }} size={4} crop={sub === 'hat' ? 'portrait' : undefined} />
+                <Character avatar={{ ...value, [sub]: 'none' }} size={4} noPet crop={sub === 'hat' ? 'portrait' : undefined} />
               </Tile>
             ) : null}
             {slotItems.map((it) => (
               <Tile key={it.key} on={current === it.key} label={it.name} rarity={it.source === 'starter' ? undefined : it.rarity}
                 locked={!it.owned} lockText={!it.owned ? (it.source === 'landmark' ? `Stamp ${it.landmark_name}` : `${it.price_coins} coins`) : undefined}
                 onPress={() => (it.owned ? set({ [sub]: it.key } as Partial<Avatar>) : onLocked?.(it))}>
-                <Character avatar={{ ...value, [sub]: it.key }} size={4} crop={sub === 'hat' ? 'portrait' : undefined} />
+                <Character avatar={{ ...value, [sub]: it.key }} size={4} noPet crop={sub === 'hat' ? 'portrait' : undefined} />
               </Tile>
             ))}
           </View>
@@ -144,7 +165,7 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', borderWidth: 3, borderColor: colors.ink },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', backgroundColor: colors.card },
   tabOn: { backgroundColor: colors.ink },
-  tabText: { fontFamily: fonts.labelBold, fontSize: 11, color: colors.ink },
+  tabText: { fontFamily: fonts.labelBold, fontSize: 10, color: colors.ink },
   subTabs: { flexDirection: 'row', gap: 8 },
   subTab: { paddingHorizontal: 12, paddingVertical: 6, borderBottomWidth: 3, borderBottomColor: 'transparent' },
   subTabOn: { borderBottomColor: colors.stamp },

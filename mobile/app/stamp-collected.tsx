@@ -99,7 +99,7 @@ export default function StampCollected() {
             {drops.map((d) => (
               <Pressable key={d.key} onPress={() => router.push('/wardrobe')} accessibilityRole="button" accessibilityLabel={`New outfit unlocked: ${d.name}. Open wardrobe.`}
                 style={[styles.drop, { borderColor: rarityColor(d.rarity as typeof s.rarity) }, hardShadow(4, 4)]}>
-                <View style={styles.dropArt}><Character avatar={{ ...toAvatar(profile?.avatar), [d.slot]: d.key }} size={4} /></View>
+                <View style={styles.dropArt}><Character avatar={{ ...toAvatar(profile?.avatar), [d.slot]: d.key }} size={4} noPet /></View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={[styles.dropKicker, { color: rarityColor(d.rarity as typeof s.rarity) }]}>{d.rarity.toUpperCase()} OUTFIT UNLOCKED</Text>
                   <Text style={styles.dropName}>{d.name}</Text>

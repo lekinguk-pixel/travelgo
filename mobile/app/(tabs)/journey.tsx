@@ -169,7 +169,7 @@ export default function Journey() {
           <View style={styles.shop}>
             {shop.map((it) => (
               <View key={it.key} style={[styles.item, { borderColor: rarityColor(it.rarity) }]}>
-                <Character avatar={{ ...avatar, [it.slot]: it.key }} size={3} crop={it.slot === 'hat' ? 'portrait' : undefined} />
+                <Character avatar={{ ...avatar, [it.slot]: it.key }} size={3} noPet crop={it.slot === 'hat' ? 'portrait' : undefined} />
                 <Text style={styles.itemName} numberOfLines={2}>{it.name}</Text>
                 {it.owned ? <TextLink label="Wear it" color={colors.teal} onPress={() => router.push('/wardrobe')} />
                   : <PixelButton label={`${it.price_coins}`} tone="ink" busy={busy === it.key} disabled={j.coins < (it.price_coins ?? 0)}

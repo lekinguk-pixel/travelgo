@@ -16,7 +16,10 @@ export type Avatar = {
   hat: string; hatColor: string;
   neck: string; neckColor: string;
   pack: string; packColor: string;
+  pet: PetKind; petColor: string;
 };
+
+export type PetKind = 'none' | 'cat' | 'dog' | 'rat' | 'bird';
 
 export const W = 16, H = 24;
 const INK = '#1B2A41';
@@ -29,6 +32,7 @@ export const DEFAULT_AVATAR: Avatar = {
   v: 2, body: 'neutral', skin: SKIN_TONES[1], hair: 'short', hairColor: HAIR_COLORS[1],
   top: 'jacket', topColor: '#2A7F75', bottom: 'jeans', bottomColor: '#2F4A73', shoes: 'trainers', shoesColor: '#C8553D',
   hat: 'cap', hatColor: '#C8553D', neck: 'none', neckColor: '#D9A441', pack: 'backpack', packColor: '#B5784A',
+  pet: 'none', petColor: '#E07B1F',
 };
 
 /** Read whatever is stored on a profile (old 3-colour looks included) as a full avatar. */
@@ -166,6 +170,46 @@ export const ART: Record<string, ItemArt> = {
   alpine_hat: { slot: 'hat', front: { y: 0, rows: ['...........f....', '......cccf......', '.....cccccc.....', '.....aaaaaa.....', '...dddddddddd...'] }, colors: { c: '#3E6B3F', d: '#2E5530', a: '#C8553D', f: '#F6F0E2' } },
   dragon_scarf: { slot: 'neck', front: { y: 10, rows: ['.....cccwww.....', '......ggww......', '.........gg.....', '.........rc.....'] }, colors: { c: '#C8553D', w: '#F6F0E2', g: '#3E9B4F', r: '#C8553D' } },
   fez: { slot: 'hat', front: { y: 0, rows: ['.......a........', '......cca.......', '......ccca......', '.....cccccc.....', '.....dddddd.....'] }, colors: { c: '#B8323A', d: '#8E2229', a: '#1A1A20' } },
+  // ---------- more starter clothes ----------
+  fedora: { slot: 'hat', front: { y: 1, rows: ['......cccc......', '.....cccccc.....', '.....aaaaaa.....', '...dddddddddd...'] }, colors: { a: INK } },
+  headband: { slot: 'hat', front: { y: 4, rows: ['.....cccccc.....'] } },
+  visor: { slot: 'hat', front: { y: 4, rows: ['.....cccccc.....', '....ddddddd.....'] } },
+  bandana: { slot: 'hat', front: { y: 2, rows: ['......cccc......', '.....cwcwcc.....', '.....cccccc.....', '...........cc...'] } },
+  polo: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' ? (y === 11 && x >= 6 && x <= 9 ? 'a' : 'c') : r === 'arm' && y === 13 ? 'd' : r === 'torso' ? (x === 8 && (y === 13 || y === 14) ? 'w' : 'c') : '') },
+  flannel: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' ? (y % 3 === 0 || x % 3 === 0 ? 'd' : 'c') : '') },
+  cardigan: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' ? (y === 17 ? 'd' : 'c') : r === 'torso' ? (x >= 7 && x <= 8 ? (y === 14 || y === 16 ? 'd' : 'w') : 'c') : '') },
+  windbreaker: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' ? (x === 8 && r === 'torso' ? 'd' : y <= 13 ? 'a' : 'c') : r === 'neck' ? 'a' : '') },
+  dress: { slot: 'top', rule: (r, x, y) => ((r === 'shoulder' && (x === 6 || x === 9 || y === 12)) || r === 'torso' || r === 'hips' ? (y === 16 ? 'd' : 'c') : ''), front: { y: 18, rows: ['....cccccccc....', '...cccccccccc...', '...dddddddddd...'] } },
+  tracktop: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' ? (x === 2 || x === 13 ? 'w' : y === 17 ? 'd' : 'c') : r === 'torso' ? (x === 8 ? 'w' : 'c') : r === 'neck' ? 'c' : '') },
+  joggers: { slot: 'bottom', rule: (r, x, y) => (r === 'hips' ? 'd' : r === 'leg' ? (y === 21 ? 'd' : 'c') : '') },
+  leggings: { slot: 'bottom', rule: (r) => (r === 'hips' || r === 'leg' ? 'c' : '') },
+  dungarees: { slot: 'bottom', rule: (r, x, y) => (r === 'hips' || r === 'leg' ? (y === 19 && (x === 6 || x === 9) ? 'd' : 'c') : r === 'torso' && x >= 6 && x <= 9 && y >= 14 ? (y === 15 && x >= 7 && x <= 8 ? 'd' : 'c') : r === 'shoulder' && (x === 6 || x === 9) ? 'c' : (r === 'torso' && (x === 6 || x === 9)) ? 'c' : '') },
+  longskirt: { slot: 'bottom', rule: (r) => (r === 'hips' ? 'c' : ''), front: { y: 18, rows: ['....cccccccc....', '....cccccccc....', '...cccccccccc...', '...dddddddddd...'] } },
+  hightops: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 23 ? 'w' : 'c') : r === 'leg' && y === 21 ? (x === 5 || x === 10 ? 'w' : 'c') : '') },
+  loafers: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 23 ? 'd' : 'c') : '') },
+  wellies: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 23 ? 'd' : 'c') : r === 'leg' && y >= 19 ? 'c' : '') },
+  headphones: { slot: 'neck', front: { y: 10, rows: ['....cc....cc....', '....cdaaaadc....'] }, colors: { a: '#2B2B33' } },
+  necklace: { slot: 'neck', front: { y: 11, rows: ['......a..a......', '.......aa.......', '.......cc.......'] }, colors: { a: '#D9A441' } },
+  duffel: { slot: 'pack', front: { y: 11, rows: ['..........c.....', '...........c....', '............c...', '...........cccc.', '...........cccc.', '...........dddd.'] } },
+  bumbag: { slot: 'pack', front: { y: 16, rows: ['....cccccccc....', '......dddd......'] } },
+
+  // ---------- more location exclusives ----------
+  graffiti_jacket: {
+    slot: 'top',
+    rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' ? ((x * 7 + y * 3) % 5 === 0 ? 'p' : (x * 3 + y * 5) % 7 === 0 ? 'y' : (x + y * 2) % 11 === 0 ? 'b' : 'c') : ''),
+    colors: { c: '#2B2B33', p: '#E58FB1', y: '#F7C766', b: '#4FC1D9' },
+  },
+  crystal_pendant: { slot: 'neck', front: { y: 11, rows: ['......a..a......', '.......aa.......', '.......gw.......', '.......gg.......'] }, colors: { a: '#C9CED6', g: '#B8323A', w: '#FFD6DA' } },
+  top_hat: { slot: 'hat', front: { y: 0, rows: ['.....cccccc.....', '.....cccccc.....', '.....cccccc.....', '.....aaaaaa.....', '...dddddddddd...'] }, colors: { c: '#1A1A20', d: '#0E0E12', a: '#B8323A' } },
+  mosaic_scarf: { slot: 'neck', front: { y: 10, rows: ['.....rbygbr.....', '......gbyr......', '.........yb.....', '.........br.....'] }, colors: { r: '#C8553D', b: '#2F6FCF', y: '#F7C766', g: '#3E9B4F' } },
+  navigator_hat: { slot: 'hat', front: { y: 1, rows: ['......cccc......', '...cccccccccc...', '..a.cccccccc.a..', '....aaaaaaaa....'] }, colors: { c: '#1B2A41', a: '#D9A441' } },
+  mortarboard: { slot: 'hat', front: { y: 1, rows: ['...dddddddddd...', '.....cccccc..t..', '.....cccccc..t..', '.............t..'] }, colors: { d: '#1A1A20', c: '#2B2B33', t: '#D9A441' } },
+  athenian_sandals: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 23 ? 'c' : x % 2 === 0 ? 'c' : '') : r === 'leg' && y >= 19 && (x + y) % 2 === 0 ? 'c' : ''), colors: { c: '#B5784A' } },
+  happi_coat: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || (r === 'arm' && y <= 14) || r === 'torso' ? (x === 6 || x === 9 || y === 16 ? 'w' : 'c') : ''), colors: { c: '#2E3F7A', w: '#F6F0E2' } },
+  hussar_jacket: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' ? (y === 11 && x >= 6 && x <= 9 ? 'a' : y === 17 ? 'a' : 'c') : r === 'torso' ? (y % 2 === 0 && x !== 7 && x !== 8 ? 'a' : 'c') : ''), colors: { c: '#B8323A', a: '#D9A441' } },
+  dragon_hood: { slot: 'hat', front: { y: 0, rows: ['....a......a....', '....cc....cc....', '...cwkccccwkc...', '...cccccccccc...', '...ctttttttttc..', '...c........c...', '...c........c...', '...c........c...', '....c......c....'] }, colors: { c: '#3E9B4F', a: '#F6F0E2', w: '#F7C766', k: INK, t: '#F6F0E2' } },
+  guitar: { slot: 'pack', back: { y: 4, rows: ['.d..............', '.d..............', '.d..............', '.d..............', '.d..............', '.d..............', '.d..............', '.d..............', 'ccc.............', 'ccc.............', 'ckc.............', 'ccc.............', 'ccc.............', '.c..............'] }, front: { y: 11, rows: ['..........k.....', '.........k......', '........k.......', '.......k........', '......k.........'] }, colors: { c: '#B5784A', d: '#6E4A2E', k: '#2B2B33' } },
+  toga: { slot: 'top', rule: (r, x, y) => ((r === 'shoulder' && x <= 8) || r === 'torso' || r === 'hips' ? (y === 16 ? 'a' : (x - y) % 4 === 0 ? 'd' : 'c') : (r === 'arm' && x <= 4 && y <= 13) ? 'c' : ''), front: { y: 18, rows: ['....cccccccc....', '....dccccccd....'] }, colors: { c: '#F6F0E2', d: '#DCD3BE', a: '#D9A441' } },
   // ---------- journey shop ----------
   pith_helmet: { slot: 'hat', front: { y: 1, rows: ['......cccc......', '.....cccccc.....', '.....aaaaaa.....', '...dddddddddd...'] }, colors: { c: '#E3D2A8', d: '#C9B489', a: '#8A6A3F' } },
   pilot_cap: { slot: 'hat', front: { y: 2, rows: ['.....cccccc.....', '....cgggggcc....', '....c......c....'] }, colors: { c: '#7A4E2E', g: '#9FB7D9' } },
@@ -188,6 +232,22 @@ export const HAIR: Record<string, HairArt> = {
   afro: { front: { y: 0, rows: ['....hhhhhhhh....', '...hhhkhhhkhh...', '...hhhhhhhhhh...', '...hkhhhhhhkh...', '...hhhhhhhhhh...', '...hhh....hhh...', '...hh......hh...'] } },
 };
 export const HAIR_STYLES = Object.keys(HAIR);
+
+// ---------- pets (sit beside the traveller) ----------
+export const PET_KINDS: PetKind[] = ['cat', 'dog', 'rat', 'bird'];
+export const PET_COLORS: Record<Exclude<PetKind, 'none'>, string[]> = {
+  cat: ['#1E1A1A', '#F6F0E2', '#E07B1F', '#8A8FA8', '#7A4E2E', '#E3D2A8'],
+  dog: ['#1E1A1A', '#F6F0E2', '#C88A4A', '#8A8FA8', '#7A4E2E', '#E3D2A8'],
+  rat: ['#F6F0E2', '#A7A39C', '#7A4E2E', '#1E1A1A'],
+  bird: ['#4F9BD9', '#3E9B4F', '#F7C766', '#C8553D', '#8A8FA8', '#F6F0E2'],
+};
+const PETS: Record<Exclude<PetKind, 'none'>, string[]> = {
+  cat: ['.c.....c..', '.cc...cc..', '.ccccccc..', '.cecccec..', '..ccncc...', '..ccccc..d', '.ccaaacc.d', '.ccaaaccdd'],
+  dog: ['..cccccc..', '.dccccccd.', '.dceccecd.', '.dccaaccd.', '...cnnc...', '..cccccc..', '..caaaac.d', '..caaaacdd'],
+  rat: ['..pp......', '.cppc.....', 'ceccccccc.', 'ncccccccc.', '.c...c..tt'],
+  bird: ['..cc....', '.cecc...', 'bccccc..', '.caacccd', '..ccccdd', '...y.y..'],
+};
+const PET_GAP = 1;
 
 // ---------- compose ----------
 export function shade(hex: string, k: number): string {
@@ -251,16 +311,42 @@ export function composeAvatar(av: Avatar): (string | null)[][] {
   return out;
 }
 
+/** The character plus their pet (if any), sitting beside them, on one grid. */
+export function composeTraveller(av: Avatar): (string | null)[][] {
+  const body = composeAvatar(av);
+  if (!av.pet || av.pet === 'none' || !PETS[av.pet]) return body;
+  const pet = PETS[av.pet];
+  const pw = pet[0].length;
+  const width = W + PET_GAP + pw;
+  const grid: (string | null)[][] = body.map((r) => [...r, ...Array(width - W).fill(null)]);
+  const light = shade(av.petColor, 1.18);
+  const pal: Record<string, string> = { c: av.petColor, d: shade(av.petColor, 0.72), a: light === av.petColor ? shade(av.petColor, 0.88) : light,
+    e: INK, n: av.pet === 'dog' ? INK : '#E58FB1', p: '#E8A8A0', t: '#E8A8A0', b: '#E07B1F', y: '#E07B1F' };
+  const x0 = W + PET_GAP, y0 = H - pet.length;
+  const mask: boolean[][] = Array.from({ length: H }, () => Array(width).fill(false));
+  pet.forEach((row, dy) => [...row].forEach((ch, dx) => {
+    if (ch === '.') return;
+    const x = x0 + dx, y = y0 + dy;
+    if (y >= 0 && y < H && x < width) { grid[y][x] = pal[ch]; mask[y][x] = true; }
+  }));
+  for (let y = 0; y < H; y++) for (let x = 0; x < width; x++) {
+    if (grid[y][x]) continue;
+    if ([[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => mask[y + dy]?.[x + dx])) grid[y][x] = INK;
+  }
+  return grid;
+}
+
 /** One SVG path per colour. */
 export function avatarPaths(grid: (string | null)[][], crop?: { y0: number; y1: number }) {
   const by = new Map<string, string[]>();
   const y0 = crop?.y0 ?? 0, y1 = crop?.y1 ?? grid.length;
   for (let y = y0; y < y1; y++) {
     let x = 0;
-    while (x < W) {
+    const w = grid[y].length;
+    while (x < w) {
       const c = grid[y][x];
       if (!c) { x++; continue; }
-      let e = x; while (e + 1 < W && grid[y][e + 1] === c) e++;
+      let e = x; while (e + 1 < w && grid[y][e + 1] === c) e++;
       (by.get(c) ?? by.set(c, []).get(c)!).push(`M${x} ${y - y0}h${e - x + 1}v1h-${e - x + 1}z`);
       x = e + 1;
     }

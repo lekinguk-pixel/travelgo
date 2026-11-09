@@ -132,7 +132,7 @@ export default function Me() {
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 40, gap: 16 },
   player: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  avatar: { width: 84, height: 112, backgroundColor: colors.ink, borderWidth: 4, borderColor: colors.gold, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 4, overflow: 'hidden' },
+  avatar: { width: 116, height: 112, backgroundColor: colors.ink, borderWidth: 4, borderColor: colors.gold, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 4, overflow: 'hidden' },
   editBadge: { position: 'absolute', top: 0, right: 0, backgroundColor: colors.gold, paddingHorizontal: 4, paddingVertical: 1 },
   editText: { fontFamily: fonts.labelBold, fontSize: 8, color: colors.ink },
   name: { fontFamily: fonts.display, fontSize: 24, color: colors.ink },

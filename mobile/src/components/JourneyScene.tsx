@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Pressable, StyleSheet } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
-import { avatarPaths, composeAvatar, type Avatar } from '@/lib/avatar';
+import { avatarPaths, composeAvatar, composeTraveller, type Avatar } from '@/lib/avatar';
 import type { JourneyMode } from '@/lib/journey';
 import { buildBikeOverlay, buildJourneyFrame, riderPlacement, SH, SW } from '@/lib/journeyScene';
 import { colors, fonts } from '@/lib/theme';
@@ -33,8 +33,8 @@ export function JourneyScene({ width, mode, avatar, tapLabel, onTap }: {
     return () => clearInterval(id);
   }, [mode, reduce]);
 
-  const grid = useMemo(() => composeAvatar(avatar), [avatar]);
   const place = riderPlacement(mode);
+  const grid = useMemo(() => (place.portrait ? composeAvatar(avatar) : composeTraveller(avatar)), [avatar, place.portrait]);
   const rider = useMemo(() => avatarPaths(grid, place.portrait ? { y0: 0, y1: 14 } : undefined), [grid, place.portrait]);
   const t = frame * 83;
   const paths = buildJourneyFrame(mode, offset.current, t);
