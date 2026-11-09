@@ -4,6 +4,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DealsCard } from '@/components/DealsCard';
 import { LandmarkRow } from '@/components/LandmarkRow';
 import { Body, Icon, Label, SegmentBar, TextLink } from '@/components/ui';
 import { travelTime, wikiImage, type Media } from '@/lib/media';
@@ -92,6 +93,8 @@ export default function CityPage() {
               {city.wiki_url ? <Pressable onPress={() => Linking.openURL(city.wiki_url!)} accessibilityRole="link"><Text style={styles.source}>Text from Wikipedia, CC BY-SA 4.0</Text></Pressable> : null}
             </View>
           ) : null}
+
+          {city.id !== profile?.home_city_id ? <DealsCard cityId={city.id} cityName={city.name} source="city" /> : null}
 
           {major.length ? (
             <View style={[styles.progress, hardShadow(4, 4)]}>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LandmarkRow } from '@/components/LandmarkRow';
+import { SpinBanner } from '@/components/SpinBanner';
 import { Body, Icon, Label, PixelButton } from '@/components/ui';
 import { useSession } from '@/lib/session';
 import { wikiImage } from '@/lib/media';
@@ -107,6 +108,8 @@ export default function Explore() {
             <Text style={styles.atlasSub}>Browse other cities, read about their landmarks and plan your next chapter.</Text>
           </View>
         </Pressable>
+
+        <SpinBanner />
 
         <View style={styles.tabs}>
           {([['todo', `To collect · ${todo.length}`], ['done', `Stamped · ${done.length}`]] as const).map(([k, l]) => (

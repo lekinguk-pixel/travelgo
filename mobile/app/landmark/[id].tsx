@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DealsCard } from '@/components/DealsCard';
 import { Body, Icon, Label, PixelButton, TextLink } from '@/components/ui';
 import { SKILL_NAMES, wikiImage, type Media } from '@/lib/media';
 import { useSession } from '@/lib/session';
@@ -115,6 +116,10 @@ export default function LandmarkDetail() {
             <Text style={styles.how}>Stamp it within {lm.radius_m} m of the spot. Your photo must be taken in mmGO while you're there.</Text>
             <PixelButton label="Open in maps" tone="ink" onPress={openMaps} />
           </View>
+
+          {lm.cities && lm.cities.id !== profile?.home_city_id ? (
+            <DealsCard cityId={lm.cities.id} cityName={lm.cities.name} source="landmark" />
+          ) : null}
         </View>
       </ScrollView>
 
