@@ -33,7 +33,7 @@ export default function Spin() {
   const rotation = useRef(new Animated.Value(0)).current;
   const angle = useRef(0);
   const lastTick = useRef(0);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<{ scrollToEnd: (o?: { animated?: boolean }) => void } | null>(null);
 
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then(setReduce).catch(() => {}); }, []);
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function Spin() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.night }}>
       <View style={{ backgroundColor: colors.paper }}><BackHeader title="Spin the globe" /></View>
-      <ScrollView ref={scroll} contentContainerStyle={styles.body}>
+      <ScrollView ref={scroll as never} contentContainerStyle={styles.body}>
         <View style={{ gap: 4, alignItems: 'center' }}>
           <Label color={colors.gold}>Feeling lucky?</Label>
           <Text style={styles.title}>Let Lady Luck pick your next chapter</Text>
