@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Body, Icon, PixelArt, TextLink, Title } from '@/components/ui';
 import { Character } from '@/components/Character';
+import { WorldFirsts } from '@/components/WorldFirsts';
 import { toAvatar } from '@/lib/avatar';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -19,6 +20,7 @@ export default function Ranks() {
   const [scope, setScope] = useState('city');
   const [mode, setMode] = useState<'solo' | 'friends' | 'clans'>('solo');
   const [period, setPeriod] = useState<'week' | 'all'>('week');
+  const [board, setBoard] = useState<'xp' | 'firsts'>('xp');
   const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
@@ -49,6 +51,15 @@ export default function Ranks() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
       <ScrollView contentContainerStyle={styles.body}>
         <Title style={{ fontSize: 32 }}>Leaderboards</Title>
+        <View style={styles.boards}>
+          {([['xp', 'XP leagues'], ['firsts', 'World firsts']] as const).map(([k, label]) => (
+            <Pressable key={k} onPress={() => setBoard(k)} accessibilityRole="tab" accessibilityState={{ selected: board === k }}
+              style={[styles.board, board === k ? styles.boardOn : null]}>
+              <Text style={[styles.boardText, board === k ? { color: colors.ink } : null]}>{k === 'firsts' ? '🏁 ' : ''}{label.toUpperCase()}</Text>
+            </Pressable>
+          ))}
+        </View>
+        {board === 'firsts' ? <WorldFirsts /> : (<>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {scopes.map((s) => (
             <Pressable key={s.key} onPress={() => setScope(s.key)} accessibilityRole="tab" accessibilityState={{ selected: current.key === s.key }}
@@ -99,6 +110,7 @@ export default function Ranks() {
             })}
           </View>
         )}
+        </>)}
       </ScrollView>
     </SafeAreaView>
   );
@@ -106,6 +118,10 @@ export default function Ranks() {
 
 const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, paddingTop: 12, paddingBottom: 40, gap: 14 },
+  boards: { flexDirection: 'row', borderWidth: 3, borderColor: colors.ink },
+  board: { flex: 1, alignItems: 'center', paddingVertical: 10, backgroundColor: colors.ink },
+  boardOn: { backgroundColor: colors.gold },
+  boardText: { fontFamily: fonts.labelBold, fontSize: 11, color: colors.paper },
   chip: { borderWidth: 2, borderColor: colors.ink, backgroundColor: colors.card, paddingHorizontal: 14, paddingVertical: 8 },
   chipOn: { backgroundColor: colors.ink },
   chipText: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.ink },

@@ -36,6 +36,14 @@ export default function Wardrobe() {
         { text: 'OK', style: 'cancel' },
         ...(it.landmark_id ? [{ text: 'See landmark', onPress: () => router.push(`/landmark/${it.landmark_id}`) }] : []),
       ]);
+    } else if (it.source === 'arrival') {
+      Alert.alert(`${it.name} 🔒`, `${it.description ?? ''}\n\nSend your digital traveller to ${it.city_name} on the Journey tab to unlock it.`, [
+        { text: 'OK', style: 'cancel' }, { text: 'Go to Journey', onPress: () => router.push('/journey-destinations') },
+      ]);
+    } else if (it.source === 'flag') {
+      Alert.alert(`${it.name} 🔒`, `Stamp any landmark in ${it.city_name}, or arrive there on your digital journey.`, [
+        { text: 'OK', style: 'cancel' }, { text: 'Go to Journey', onPress: () => router.push('/journey-destinations') },
+      ]);
     } else {
       Alert.alert(`${it.name} 🔒`, `Buy it in the Journey shop for ${it.price_coins} coins.`, [
         { text: 'OK', style: 'cancel' }, { text: 'Go to Journey', onPress: () => router.push('/journey') },

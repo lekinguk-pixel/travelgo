@@ -3,7 +3,8 @@ import { supabase } from './supabase';
 export type JourneyMode = 'walk' | 'bike' | 'train' | 'plane' | 'parked';
 export type CityRef = { id: number; name: string; country: string; photo: string | null };
 export type Boost = { stamps: number; countries: number; bronze: number; silver: number; gold: number; multiplier: number; bike: boolean; train: boolean; pilot: boolean };
-export type Arrival = { city_id: number; name: string; country: string; photo: string | null; coins: number; first_visit: boolean; km: number };
+export type ArrivalItem = { key: string; name: string; slot: 'hat' | 'top' | 'bottom' | 'shoes' | 'neck' | 'pack'; rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' };
+export type Arrival = { city_id: number; name: string; country: string; photo: string | null; coins: number; first_visit: boolean; km: number; items?: ArrivalItem[] };
 export type JourneyState = {
   city: CityRef; to: CityRef | null;
   route_km: number; progress_km: number; left_km: number; eta_minutes: number | null;

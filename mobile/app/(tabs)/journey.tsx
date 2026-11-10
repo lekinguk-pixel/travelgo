@@ -2,11 +2,11 @@ import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Animated, Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Character } from '@/components/Character';
 import { Fireworks } from '@/components/Fireworks';
-import { JourneyScene } from '@/components/JourneyScene';
+import { JourneyScene, PixelCoin } from '@/components/JourneyScene';
 import { Label, PixelButton, SegmentBar, TextLink } from '@/components/ui';
 import type { WardrobeItem } from '@/components/AvatarEditor';
 import { toAvatar } from '@/lib/avatar';
@@ -32,6 +32,8 @@ export default function Journey() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const pending = useRef(0);
+  const inflight = useRef(0);
+  const bump = useRef(new Animated.Value(1)).current;
   const syncing = useRef(false);
 
   const apply = useCallback((s: JourneyState) => {
@@ -42,9 +44,9 @@ export default function Journey() {
   const sync = useCallback(async () => {
     if (syncing.current) return;
     syncing.current = true;
-    const taps = pending.current; pending.current = 0;
-    try { apply(await journeyRpc('journey_sync', { p_taps: taps })); setError(''); }
-    catch (e) { pending.current += taps; setError(friendlyError(e)); }
+    const taps = pending.current; pending.current = 0; inflight.current = taps;
+    try { const s = await journeyRpc('journey_sync', { p_taps: taps }); inflight.current = 0; apply(s); setError(''); }
+    catch (e) { inflight.current = 0; pending.current += taps; setError(friendlyError(e)); }
     finally { syncing.current = false; }
   }, [apply]);
 
@@ -69,10 +71,19 @@ export default function Journey() {
   const eta = j && travelling ? (left / Math.max(0.1, j.kmh)) * 60 : null;
   useEffect(() => { if (j && travelling && left <= 0) sync(); }, [left <= 0]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Coins drop on every 5th tap and a 10-coin jackpot on every 50th, counted over lifetime taps (matches the server).
+  const tapCoins = (n: number) => Math.floor(n / 5) + 10 * Math.floor(n / 50);
   function onTap() {
     pending.current += 1;
-    Haptics.selectionAsync().catch(() => {});
     setTick((n) => n + 1);
+    const total = (j?.taps ?? 0) + inflight.current + pending.current;
+    const drop = total % 50 === 0 ? 11 : total % 5 === 0 ? 1 : 0;
+    if (drop) {
+      Haptics.impactAsync(drop > 1 ? Haptics.ImpactFeedbackStyle.Heavy : Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      bump.setValue(drop > 1 ? 1.5 : 1.25);
+      Animated.spring(bump, { toValue: 1, friction: 4, useNativeDriver: true }).start();
+    } else Haptics.selectionAsync().catch(() => {});
+    return drop;
   }
 
   async function act(key: string, fn: () => Promise<JourneyState>) {
@@ -85,8 +96,10 @@ export default function Journey() {
   const avatar = toAvatar(profile?.avatar);
   const b = j.boost;
   const dest = j.to;
-  const coinsFmt = Number(j.coins).toLocaleString();
-  const tapLabel = j.mode === 'parked' ? '+1 coin / 5 taps' : `+${j.tap_km < 0.1 ? Math.round(j.tap_km * 1000) + ' m' : j.tap_km.toFixed(2) + ' km'}`;
+  const unsynced = inflight.current + pending.current;
+  const coinsFmt = (Number(j.coins) + tapCoins(j.taps + unsynced) - tapCoins(j.taps)).toLocaleString();
+  const tapLabel = j.mode === 'parked' ? 'Exploring…' : `+${j.tap_km < 0.1 ? Math.round(j.tap_km * 1000) + ' m' : j.tap_km.toFixed(2) + ' km'}`;
+  const toNextCoin = 5 - ((j.taps + unsynced) % 5);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
@@ -96,13 +109,13 @@ export default function Journey() {
             <Label color={colors.stamp}>Digital journey</Label>
             <Text style={styles.title} numberOfLines={1}>{dest ? `To ${dest.name}` : `In ${j.city.name}`}</Text>
           </View>
-          <View style={[styles.coins, hardShadow(3, 3)]}><View style={styles.coinDot} /><Text style={styles.coinText}>{coinsFmt}</Text></View>
+          <Animated.View style={[styles.coins, hardShadow(3, 3), { transform: [{ scale: bump }] }]}><PixelCoin size={18} /><Text style={styles.coinText}>{coinsFmt}</Text></Animated.View>
         </View>
 
         <View style={styles.sceneWrap}>
           <JourneyScene width={width} mode={j.mode} avatar={avatar} tapLabel={tapLabel} onTap={onTap} />
           <View style={styles.modeTag}><Text style={styles.modeText}>{MODE_LABEL[j.mode].toUpperCase()}{j.mode !== 'parked' ? ` · ${Math.round(j.kmh)} KM/H` : ''}</Text></View>
-          <Text style={styles.tapHint}>TAP TO {j.mode === 'parked' ? 'EXPLORE' : 'GO FASTER'}</Text>
+          <Text style={styles.tapHint}>TAP TO {j.mode === 'parked' ? 'EXPLORE' : 'GO FASTER'} · COIN IN {toNextCoin}</Text>
         </View>
 
         <View style={styles.body}>
@@ -189,6 +202,17 @@ export default function Journey() {
             <Text style={styles.modalTitle}>{arrival?.name}</Text>
             <Text style={styles.modalSub}>{arrival?.country} · {arrival ? Math.round(arrival.km).toLocaleString() : 0} km journey</Text>
             <Text style={styles.modalCoins}>+{arrival?.coins} coins</Text>
+            {arrival?.items?.length ? (
+              <View style={styles.wonRow}>
+                {arrival.items.map((it) => (
+                  <View key={it.key} style={[styles.wonItem, { borderColor: rarityColor(it.rarity) }]}>
+                    <Character avatar={{ ...avatar, [it.slot]: it.key }} size={3} noPet crop={it.slot === 'hat' ? 'portrait' : undefined} />
+                    <Text style={styles.wonName} numberOfLines={2}>{it.name}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+            {arrival?.items?.length ? <Text style={styles.wonNote}>Unlocked! Find {arrival.items.length > 1 ? 'them' : 'it'} in your Wardrobe.</Text> : null}
             <PixelButton label="Choose next destination" onPress={() => { setArrival(null); router.push('/journey-destinations'); }} />
             <TextLink label={`Visit ${arrival?.name} for real`} color={colors.gold} onPress={() => { const id = arrival?.city_id; setArrival(null); if (id) router.push(`/city/${id}`); }} />
           </View>
@@ -271,5 +295,9 @@ const styles = StyleSheet.create({
   modalPhoto: { width: '100%', height: 180, borderWidth: 3, borderColor: colors.paper, backgroundColor: '#24365A' },
   modalTitle: { fontFamily: fonts.display, fontSize: 30, color: colors.paper },
   modalSub: { fontFamily: fonts.body, fontSize: 13, color: colors.silver },
+  wonRow: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
+  wonItem: { width: 96, alignItems: 'center', gap: 4, padding: 6, borderWidth: 2, backgroundColor: '#FFF8E6' },
+  wonName: { fontFamily: fonts.bodyBold, fontSize: 11.5, color: colors.ink, textAlign: 'center' },
+  wonNote: { fontFamily: fonts.bodySemi, fontSize: 13, color: colors.paper, textAlign: 'center' },
   modalCoins: { fontFamily: fonts.display, fontSize: 22, color: colors.gold },
 });

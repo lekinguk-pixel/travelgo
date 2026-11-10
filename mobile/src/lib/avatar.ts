@@ -1,3 +1,4 @@
+import { FLAG_COLORS, FLAGS } from './flags';
 // The traveller, front view, 16 x 24 pixels, drawn in layers.
 // Clothing is described by body region (shoulders, arms, torso, hips, legs, feet),
 // so every outfit fits every body style automatically.
@@ -217,7 +218,37 @@ export const ART: Record<string, ItemArt> = {
   puffer: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' || r === 'hips' ? (y === 12 || y === 14 || y === 16 ? 'd' : 'c') : r === 'neck' ? 'c' : '') },
   hiking_boots: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 23 ? 'a' : 'c') : r === 'leg' && y >= 20 ? 'c' : ''), colors: { c: '#7A4E2E', a: '#2B2B33' } },
   medal: { slot: 'neck', front: { y: 10, rows: ['.....r....r.....', '......r..r......', '.......rr.......', '.......cc.......', '.......cc.......'] }, colors: { r: '#2F6FCF', c: '#D9A441' } },
+  // ---------- journey arrival outfits ----------
+  carnival_crown: { slot: 'hat', front: { y: 0, rows: ['....r.y..g.b....', '....ryy..ggb....', '.....aaaaaa.....'] }, colors: { r: '#E0457B', y: '#F7C766', g: '#3E9B4F', b: '#4FC1D9', a: '#D9A441' } },
+  sombrero: { slot: 'hat', front: { y: 1, rows: ['......cccc......', '.....cacaca.....', '.dddddddddddddd.'] }, colors: { c: '#D9B45A', a: '#C8553D', d: '#B08A3A' } },
+  chullo: { slot: 'hat', front: { y: 1, rows: ['.......c........', '......cccc......', '.....acacac.....', '.....cccccc.....', '.....c....c.....', '.....a....a.....'] }, colors: { c: '#C8553D', a: '#F7C766' } },
+  clogs: { slot: 'shoes', rule: (r, x, y) => (r === 'foot' ? (y === 22 ? 'a' : 'c') : ''), front: { y: 23, rows: ['...c........c...'] }, colors: { c: '#F2C230', a: '#E07B1F' } },
+  lopapeysa: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' ? (y === 11 || y === 12 ? ((x + y) % 2 ? 'a' : 'b') : y === 13 && x % 2 === 0 ? 'b' : y === 17 && r === 'arm' ? 'b' : 'c') : r === 'neck' ? 'a' : ''), colors: { c: '#E9E2D0', a: '#4A3A2E', b: '#8A7A66' } },
+  elephant_pants: { slot: 'bottom', rule: (r, x, y) => (r === 'hips' ? 'd' : r === 'leg' ? ((x + y) % 3 === 0 ? 'a' : 'c') : ''), colors: { c: '#2F6FCF', d: '#1F4F9F', a: '#F7C766' } },
+  gondolier_hat: { slot: 'hat', front: { y: 2, rows: ['......cccc......', '.....aaaaaa.....', '...dddddddddd...'] }, colors: { c: '#E3C779', a: '#C8553D', d: '#C9A95A' } },
+  lederhosen: { slot: 'bottom', rule: (r, x, y) => (r === 'hips' ? 'c' : r === 'leg' && y <= 19 ? (y === 19 ? 'd' : 'c') : ''), front: { y: 11, rows: ['......a..a......', '......a..a......', '......aaaa......', '......a..a......', '......a..a......', '......a..a......'] }, colors: { c: '#7A5233', d: '#5A3A22', a: '#4A3020' } },
+  lei: { slot: 'neck', front: { y: 10, rows: ['.....prypry.....', '......pyyr......'] }, colors: { p: '#E58FB1', r: '#C8553D', y: '#F7C766' } },
+  aloha_shirt: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' ? 'c' : r === 'arm' && y === 13 ? 'c' : r === 'torso' ? ((x * 5 + y * 3) % 7 === 0 ? 'f' : (x * 2 + y) % 5 === 0 ? 'g' : 'c') : ''), colors: { c: '#2A9D8F', f: '#F6F0E2', g: '#E58FB1', d: '#1E7268' } },
+  campaign_hat: { slot: 'hat', front: { y: 1, rows: ['......c..c......', '.....cccccc.....', '.....aaaaaa.....', '..dddddddddddd..'] }, colors: { c: '#B5843A', a: '#6E4A2E', d: '#8A6230' } },
+  kilt: { slot: 'bottom', rule: (r) => (r === 'hips' ? 'c' : ''), front: { y: 18, rows: ['....cacbcaca....', '....acacacac....', '....bcbcbcbc....'] }, colors: { c: '#2E6B3F', a: '#C8553D', b: '#1B2A41' } },
+  kimono: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' || r === 'hips' ? (y === 16 ? 'a' : (r === 'shoulder' || y === 13) && (x === 7 || x === 8) ? 'w' : r === 'arm' && y === 17 ? 'd' : 'c') : r === 'leg' && y <= 20 ? 'c' : ''), front: { y: 18, rows: ['.....cccccc.....', '.....cccccc.....', '.....dddddd.....'] }, colors: { c: '#B8323A', a: '#D9A441', w: '#F6F0E2', d: '#8E2229' } },
+  fisherman_cap: { slot: 'hat', front: { y: 2, rows: ['......cccc......', '.....cccccc.....', '....aaaaaaa.....'] }, colors: { c: '#1B2A41', a: '#0E1622' } },
+  breton_top: { slot: 'top', rule: (r, x, y) => (r === 'shoulder' || r === 'arm' || r === 'torso' ? (y % 2 === 0 ? 'b' : 'w') : ''), colors: { w: '#F6F0E2', b: '#1B2A41' } },
+  block_print_scarf: { slot: 'neck', front: { y: 10, rows: ['.....cpcpcc.....', '......pccp......', '.........pc.....', '.........cp.....'] }, colors: { c: '#2F6FCF', p: '#F6F0E2' } },
 };
+
+// ---------- flag tees: a tee in any colour with a 3×3 flag patch on the chest ----------
+const flagColors = Object.fromEntries(Object.entries(FLAG_COLORS).map(([k, v]) => ['F' + k, v]));
+for (const [code, rows] of Object.entries(FLAGS)) {
+  ART[`flag_${code}`] = {
+    slot: 'top',
+    rule: (r, x, y) => {
+      if (r === 'torso' && x >= 7 && x <= 9 && y >= 13 && y <= 15) return 'F' + rows[y - 13][x - 7];
+      return r === 'shoulder' ? 'c' : r === 'arm' && y === 13 ? 'd' : r === 'torso' ? (y === 16 ? 'd' : 'c') : '';
+    },
+    colors: flagColors,
+  };
+}
 
 // ---------- hair ----------
 type HairArt = { front: Extra; back?: Extra };

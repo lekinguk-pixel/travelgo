@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { colors, fonts, hardShadow, rarityColor, type Rarity } from '@/lib/theme';
 
 export type WardrobeItem = {
-  key: string; name: string; slot: Slot; rarity: Rarity; source: 'starter' | 'landmark' | 'journey';
+  key: string; name: string; slot: Slot; rarity: Rarity; source: 'starter' | 'landmark' | 'journey' | 'arrival' | 'flag';
   price_coins: number | null; colorable: boolean; description: string | null; owned: boolean;
   landmark_id: number | null; landmark_name: string | null; city_name: string | null;
 };
@@ -31,7 +31,10 @@ export function AvatarEditor({ value, onChange, onLocked }: {
   useEffect(() => { setSub(tab === 'Extras' ? 'hat' : 'top'); }, [tab]);
 
   const set = (patch: Partial<Avatar>) => onChange({ ...value, ...patch });
-  const slotItems = useMemo(() => items.filter((i) => i.slot === sub), [items, sub]);
+  // Flag tees only show once collected (there's one per country); the rest show locked with how to get them.
+  const slotItems = useMemo(() => items.filter((i) => i.slot === sub && (i.source !== 'flag' || i.owned)), [items, sub]);
+  const flagsOwned = items.filter((i) => i.source === 'flag' && i.owned).length;
+  const flagsTotal = items.filter((i) => i.source === 'flag').length;
   const current = value[sub];
   const currentItem = items.find((i) => i.key === current);
   const colorKey = `${sub}Color` as keyof Avatar;
@@ -116,12 +119,15 @@ export function AvatarEditor({ value, onChange, onLocked }: {
             ) : null}
             {slotItems.map((it) => (
               <Tile key={it.key} on={current === it.key} label={it.name} rarity={it.source === 'starter' ? undefined : it.rarity}
-                locked={!it.owned} lockText={!it.owned ? (it.source === 'landmark' ? `Stamp ${it.landmark_name}` : `${it.price_coins} coins`) : undefined}
+                locked={!it.owned} lockText={!it.owned ? lockText(it) : undefined}
                 onPress={() => (it.owned ? set({ [sub]: it.key } as Partial<Avatar>) : onLocked?.(it))}>
                 <Character avatar={{ ...value, [sub]: it.key }} size={4} noPet crop={sub === 'hat' ? 'portrait' : undefined} />
               </Tile>
             ))}
           </View>
+          {sub === 'top' ? (
+            <Text style={styles.note}>🏳 Flag tees: {flagsOwned} of {flagsTotal} collected. Visit a country for real, or arrive there on your digital journey, to add its flag.</Text>
+          ) : null}
           {showColours ? (
             <>
               <Text style={styles.h}>{SLOT_LABEL[sub]} colour</Text>
@@ -134,6 +140,13 @@ export function AvatarEditor({ value, onChange, onLocked }: {
       ) : null}
     </View>
   );
+}
+
+export function lockText(it: WardrobeItem) {
+  if (it.source === 'landmark') return `Stamp ${it.landmark_name}`;
+  if (it.source === 'arrival') return `Journey to ${it.city_name}`;
+  if (it.source === 'flag') return `Visit ${it.city_name}`;
+  return `${it.price_coins} coins`;
 }
 
 function Tile({ on, label, onPress, children, locked, lockText, rarity }: {

@@ -19,6 +19,7 @@ export default function StampCollected() {
   const s = lastStamp.value;
   const { refreshProfile, session, profile } = useSession();
   const [drops, setDrops] = useState<{ key: string; name: string; slot: string; rarity: string; description: string | null }[]>([]);
+  const [firsts, setFirsts] = useState<{ scope: string; place: number; label: string; landmarks: number }[]>([]);
   const [skillXp, setSkillXp] = useState<Record<string, number>>({});
   const [cityName, setCityName] = useState<string | null>(null);
   const [showFireworks, setShowFireworks] = useState(true);
@@ -33,6 +34,8 @@ export default function StampCollected() {
     Animated.spring(pop, { toValue: 1, friction: 4, tension: 120, useNativeDriver: true }).start();
     // Location-exclusive outfit drops for this landmark.
     supabase.rpc('stamp_drops', { p_stamp_id: s.stamp_id }).then(({ data }) => setDrops((data ?? []) as typeof drops));
+    // Did this stamp finish a city, country, continent or the world?
+    supabase.rpc('stamp_world_firsts', { p_stamp_id: s.stamp_id }).then(({ data }) => setFirsts((data ?? []) as typeof firsts));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     refreshProfile();
@@ -96,6 +99,15 @@ export default function StampCollected() {
               {r.quests_completed.map((q) => <Text key={q} style={styles.quest}>Quest complete: {q}</Text>)}
               {r.new_city_tiers.map((t) => <Text key={t} style={styles.quest}>{t.toUpperCase()} chapter earned!</Text>)}
             </View>
+            {firsts.map((f) => (
+              <Pressable key={f.scope} onPress={() => router.push('/(tabs)/ranks')} accessibilityRole="button"
+                accessibilityLabel={`${f.place === 1 ? 'World first' : `Number ${f.place} in the world`}: every landmark in ${f.label}`}
+                style={[styles.firstCard, hardShadow(4, 4)]}>
+                <Text style={styles.firstKicker}>{f.place === 1 ? '🏁 WORLD FIRST!' : f.place <= 3 ? `🏁 ${f.place === 2 ? '2ND' : '3RD'} IN THE WORLD` : `🏁 FINISHED · #${f.place}`}</Text>
+                <Text style={styles.firstTitle}>Every landmark in {f.label}</Text>
+                <Text style={styles.firstSub}>All {f.landmarks} stamped. {f.place <= 3 ? 'Your name is on the World firsts board for good.' : 'See the World firsts board.'}</Text>
+              </Pressable>
+            ))}
             {drops.map((d) => (
               <Pressable key={d.key} onPress={() => router.push('/wardrobe')} accessibilityRole="button" accessibilityLabel={`New outfit unlocked: ${d.name}. Open wardrobe.`}
                 style={[styles.drop, { borderColor: rarityColor(d.rarity as typeof s.rarity) }, hardShadow(4, 4)]}>
@@ -144,6 +156,10 @@ function celebrate(s: typeof lastStamp.value, cityName: string | null): Celebrat
 }
 
 const styles = StyleSheet.create({
+  firstCard: { backgroundColor: colors.night, borderWidth: 3, borderColor: colors.gold, padding: 14, gap: 4 },
+  firstKicker: { fontFamily: fonts.labelBold, fontSize: 12, color: colors.gold },
+  firstTitle: { fontFamily: fonts.display, fontSize: 22, color: colors.paper },
+  firstSub: { fontFamily: fonts.body, fontSize: 13, color: colors.silver },
   drop: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.ink, borderWidth: 3, padding: 12 },
   dropArt: { width: 72, height: 100, alignItems: 'center', justifyContent: 'flex-end', backgroundColor: '#24365A' },
   dropKicker: { fontFamily: fonts.labelBold, fontSize: 10 },
