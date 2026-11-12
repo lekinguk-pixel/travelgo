@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AtlasCard } from '@/components/AtlasCard';
 import { SpinBanner } from '@/components/SpinBanner';
+import { FirstTip } from '@/components/FirstTip';
 import { BackHeader } from '@/components/social';
 import { Body, PixelInput } from '@/components/ui';
 import { loadAtlas, type AtlasCountry } from '@/lib/atlas';
@@ -38,6 +39,7 @@ export default function AtlasCountries() {
       <BackHeader title="Atlas" />
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <Body>Choose a country to see its cities and landmarks.</Body>
+        <FirstTip id="atlas" title="The Atlas" text="Every city here is a chapter. Read about its landmarks before you go, and plan your next trip." />
         {!q ? <SpinBanner /> : null}
         <PixelInput value={q} onChangeText={setQ} placeholder="Search a country or city" autoCorrect={false} />
         {error ? <Body>{error}</Body> : null}

@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Character } from '@/components/Character';
 import { Fireworks } from '@/components/Fireworks';
 import { JourneyScene, PixelCoin } from '@/components/JourneyScene';
+import { FirstTip } from '@/components/FirstTip';
 import { Label, PixelButton, SegmentBar, TextLink } from '@/components/ui';
 import type { WardrobeItem } from '@/components/AvatarEditor';
 import { toAvatar } from '@/lib/avatar';
@@ -104,6 +105,7 @@ export default function Journey() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={{ paddingHorizontal: 20, paddingTop: 12 }}><FirstTip id="journey" title="Digital journey" text="Tap to travel, pick destinations and win city outfits. Real stamps make your traveller faster: bike at 5 stamps, train with a city medal, plane after 2 countries." /></View>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Label color={colors.stamp}>Digital journey</Label>

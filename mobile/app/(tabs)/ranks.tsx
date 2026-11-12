@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Body, Icon, PixelArt, TextLink, Title } from '@/components/ui';
 import { Character } from '@/components/Character';
 import { WorldFirsts } from '@/components/WorldFirsts';
+import { FirstTip } from '@/components/FirstTip';
 import { toAvatar } from '@/lib/avatar';
 import { useSession } from '@/lib/session';
 import { supabase } from '@/lib/supabase';
@@ -59,6 +60,7 @@ export default function Ranks() {
             </Pressable>
           ))}
         </View>
+        <FirstTip id="ranks" title="Leaderboards" text="Climb the XP leagues in your city, or switch to World firsts and race to be the first to stamp a whole city, country or the world." />
         {board === 'firsts' ? <WorldFirsts /> : (<>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {scopes.map((s) => (

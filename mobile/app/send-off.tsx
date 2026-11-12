@@ -32,7 +32,7 @@ export default function SendOff() {
         <Body>Your first chapter is {city ?? 'your home town'}. Visit its landmarks, take a photo of yourself at each one and collect the stamps.</Body>
       </View>
       <View style={{ marginTop: 'auto', paddingHorizontal: 24 }}>
-        <PixelButton label="Open my book" onPress={() => router.replace('/(tabs)')} disabled={!arrived} />
+        <PixelButton label="Take my first journey" onPress={() => router.replace('/first-journey')} disabled={!arrived} />
       </View>
     </View>
   );

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AvatarEditor, type WardrobeItem } from '@/components/AvatarEditor';
+import { FirstTip } from '@/components/FirstTip';
 import { Character } from '@/components/Character';
 import { BackHeader } from '@/components/social';
 import { PixelButton } from '@/components/ui';
@@ -55,6 +56,7 @@ export default function Wardrobe() {
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }}>
       <BackHeader title="Wardrobe" />
       <ScrollView contentContainerStyle={styles.body}>
+        <FirstTip id="wardrobe" title="Your wardrobe" text="Locked outfits show how to win them: stamp famous landmarks, journey to certain cities, or collect a flag tee in every country." />
         <View style={[styles.stage, hardShadow(4, 4)]}>
           <View style={styles.grass} />
           <Character avatar={avatar} size={7} style={styles.sprite} />

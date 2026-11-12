@@ -93,8 +93,8 @@ export default function CreateTraveller() {
             <Character avatar={avatar} size={7} style={styles.sprite} />
           </View>
 
-          <AvatarEditor value={avatar} onChange={setAvatar} />
-          <Text style={styles.hint}>Unlock rare outfits by stamping famous landmarks, like a beret at the Eiffel Tower.</Text>
+          <AvatarEditor value={avatar} onChange={setAvatar} quick />
+          <Text style={styles.hint}>Just the basics for now. Hats, bags, pets and rare outfits from famous landmarks are waiting in your Wardrobe.</Text>
 
           <View style={{ gap: 6 }}>
             <Label>Traveller name</Label>

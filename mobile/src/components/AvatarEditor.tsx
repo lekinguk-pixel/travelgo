@@ -18,9 +18,10 @@ const HAIR_LABEL: Record<string, string> = { none: 'Bald', buzz: 'Buzz', short: 
 const SLOT_LABEL: Record<Slot, string> = { top: 'Top', bottom: 'Bottoms', shoes: 'Shoes', hat: 'Hat', neck: 'Neck', pack: 'Bag' };
 
 /** Pick body, skin, hair and clothing. Locked items show how to unlock them. */
-export function AvatarEditor({ value, onChange, onLocked }: {
-  value: Avatar; onChange: (a: Avatar) => void; onLocked?: (item: WardrobeItem) => void;
+export function AvatarEditor({ value, onChange, onLocked, quick }: {
+  value: Avatar; onChange: (a: Avatar) => void; onLocked?: (item: WardrobeItem) => void; quick?: boolean; // quick: first-run, just the basics
 }) {
+  const tabs = quick ? (['Body', 'Hair', 'Clothes'] as const) : TABS;
   const [tab, setTab] = useState<(typeof TABS)[number]>('Body');
   const [sub, setSub] = useState<Slot>('top');
   const [items, setItems] = useState<WardrobeItem[]>([]);
@@ -31,8 +32,9 @@ export function AvatarEditor({ value, onChange, onLocked }: {
   useEffect(() => { setSub(tab === 'Extras' ? 'hat' : 'top'); }, [tab]);
 
   const set = (patch: Partial<Avatar>) => onChange({ ...value, ...patch });
+  // In the quick editor, only starter clothes (no locked teasers yet).
   // Flag tees only show once collected (there's one per country); the rest show locked with how to get them.
-  const slotItems = useMemo(() => items.filter((i) => i.slot === sub && (i.source !== 'flag' || i.owned)), [items, sub]);
+  const slotItems = useMemo(() => items.filter((i) => i.slot === sub && (i.source !== 'flag' || i.owned) && (!quick || i.source === 'starter')), [items, sub, quick]);
   const flagsOwned = items.filter((i) => i.source === 'flag' && i.owned).length;
   const flagsTotal = items.filter((i) => i.source === 'flag').length;
   const current = value[sub];
@@ -43,7 +45,7 @@ export function AvatarEditor({ value, onChange, onLocked }: {
   return (
     <View style={{ gap: 12 }}>
       <View style={styles.tabs} accessibilityRole="tablist">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <Pressable key={t} onPress={() => setTab(t)} accessibilityRole="tab" accessibilityState={{ selected: tab === t }}
             style={[styles.tab, tab === t ? styles.tabOn : null]}>
             <Text style={[styles.tabText, tab === t ? { color: colors.paper } : null]}>{t.toUpperCase()}</Text>
@@ -125,7 +127,7 @@ export function AvatarEditor({ value, onChange, onLocked }: {
               </Tile>
             ))}
           </View>
-          {sub === 'top' ? (
+          {sub === 'top' && !quick ? (
             <Text style={styles.note}>🏳 Flag tees: {flagsOwned} of {flagsTotal} collected. Visit a country for real, or arrive there on your digital journey, to add its flag.</Text>
           ) : null}
           {showColours ? (

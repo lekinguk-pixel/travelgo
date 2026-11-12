@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, T
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LandmarkRow } from '@/components/LandmarkRow';
 import { SpinBanner } from '@/components/SpinBanner';
+import { FirstStampCard } from '@/components/FirstStampCard';
 import { Body, Icon, Label, PixelButton } from '@/components/ui';
 import { useSession } from '@/lib/session';
 import { wikiImage } from '@/lib/media';
@@ -44,6 +45,9 @@ export default function Explore() {
   const todo = landmarks.filter((l) => !l.stamped), done = landmarks.filter((l) => l.stamped);
   const shown = tab === 'todo' ? todo : done;
   const quest = quests.find((q) => !q.completed) ?? quests[0];
+  // First quest: the nearest landmark, or the city's headline sight if we don't know where you are.
+  const RANK = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
+  const firstQuest = todo[0]?.distanceM != null ? todo[0] : [...todo].sort((a, b) => RANK.indexOf(a.rarity) - RANK.indexOf(b.rarity))[0];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.paper }} edges={['top']}>
@@ -67,6 +71,8 @@ export default function Explore() {
           <View style={[styles.pill, { borderColor: colors.gold, backgroundColor: '#F6E7C3' }]}><Text style={[styles.pillText, { color: colors.bronze }]}>{(profile?.total_xp ?? 0).toLocaleString()} XP</Text></View>
           <View style={[styles.pill, { borderColor: colors.teal, backgroundColor: '#D7E9E5' }]}><Text style={[styles.pillText, { color: colors.teal }]}>{rank ? `#${rank} in ${city?.name}` : 'Unranked'}</Text></View>
         </View>
+
+        {stamped === 0 && firstQuest ? <FirstStampCard lm={firstQuest} distanceM={firstQuest.distanceM} /> : null}
 
         <View style={[styles.card, hardShadow(4, 4)]}>
           <View style={styles.cardTop}>

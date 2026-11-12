@@ -44,7 +44,7 @@ export default function TitleScreen() {
   }, [reduce, float, panelIn, cursor]);
 
   if (session && profile) return <Redirect href="/(tabs)" />;
-  if (session && !profile) return <Redirect href="/create-traveller" />;
+  if (session && !profile) return <Redirect href="/prologue" />;
 
   const lift = float.interpolate({ inputRange: [0, 1], outputRange: [0, -6] });
   const rise = panelIn.interpolate({ inputRange: [0, 1], outputRange: [60, 0] });
